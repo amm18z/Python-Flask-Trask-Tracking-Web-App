@@ -1,0 +1,28 @@
+<!--The program in this file is the individual work of Stefano Sanidas, sas19t, 21/02/2024-->
+<html>
+	<body>
+		<h1> Create A Task </h1>
+		
+		<form action = "{{ url_for('add_review') }}" method = "POST">
+			 Name of Task:
+			 <input type = "text" name = "Name" /><br></br>
+         
+			 Description of Task:
+			 <textarea name = "Description" ></textarea><br>
+			 
+			 Due Date:
+			 <input type = "datetime" name = "DueDate" /><br>
+			 
+			 Priority:
+			 <input type = "number" name = "Priority" /><br>
+		
+			 <input type = "submit" value = "Create" /><br>
+			 
+		</form>
+		
+		<br><a href = "/">Back to home</a></br>
+			 
+			 
+		
+	</body>
+</html>
