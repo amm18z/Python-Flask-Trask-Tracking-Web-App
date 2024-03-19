@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <h1> Update Task </h1>
+        <form action = "{{ url_for('addtsk') }}" method = "POST">
+
+         <h2> Task Information </h2>
+
+         <br>Name:<input type ="text" name = "Name" />
+            <br>Description:<input type ="text" name = "Description" />
+            <br>Due Date:<input type ="date" name = "DueDate" />
+            <br>Priority:<input type ="number" name = "Priority" />
+         <br><input type = "submit" value = "Submit" /><br>
+
+         <h2><a href = / > Back to home</a></h2>
+      </form>
+    </body>
+</html>

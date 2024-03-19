@@ -1,0 +1,19 @@
+<!--2/21/2024 The program in this file is the individual work of Rafael Cardoso RDC21C-->
+
+<!doctype html>
+<h1> Select a Task to Delete </h1>
+      <form action="{{ url_for('deletingtsk') }}" method="POST">
+         {% for row in rows %}
+            <div>
+                <input type="checkbox" name="Name" value="{{ row['Name'] }}">
+                <label>{{ row['Name'] }}</label>
+            </div>
+         {% endfor %}
+         <br>
+         <input type="submit" value="Submit">
+      </form>
+
+      <a href="/">Back to home</a>
+
+   </body>
+</html>
