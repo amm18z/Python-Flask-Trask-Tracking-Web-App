@@ -1,38 +1,40 @@
 """3/27/2024 The program in this file is the work of Aidan McGill, Judas McCall Smith, and Rafael Cardoso"""
 
-import mysql.connector
+import mysql.connector as msc
 
 def setup_database():
     try:
         # Connect to the database
-        connection = mysql.connector.connect(
+        conn = msc.connect(
             host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",
             port="3306",
             user="admin",
             password="masterpassword"
         )
         
-        if connection.is_connected():
+        if conn.is_connected():
             print("Successfully connected to the database.")
             # Execute a simple query to ping the database
-            cursor = connection.cursor()
+            cur = conn.cursor()
 
-            cursor.execute("CREATE TABLE Tasks (Id INTEGER PRIMARY KEY, Name VARCHAR(100), Description VARCHAR(200),"
+            cur.execute("USE TaskTracker")
+
+            cur.execute("CREATE TABLE IF NOT EXISTS Tasks (Id INT AUTO_INCREMENT PRIMARY KEY, Name VARCHAR(100), Description VARCHAR(200),"
                            "CreationDate DATE, DueDate DATE, Priority INT, User_id INT, FOREIGN KEY(User_id) REFERENCES Users(Id))")
             print('Created table Tasks')
 
-            conn.execute('CREATE TABLE Users (Id INT, UserName VARCHAR(20), Password_Hash VARCHAR(500), Salt VARCHAR(100))')
+            conn.execute('CREATE TABLE IF NOT EXISTS Users (Id INT AUTO_INCREMENT PRIMARY KEY, UserName VARCHAR(20), Password_Hash VARCHAR(500), Salt VARCHAR(100))')
             print('Created table Tasks')
 
-            conn.execute('CREATE TABLE Assignments (Id INT, User_id INT, Task_id INT, FOREIGN KEY(User_id) REFERENCES Users(Id))')
+            conn.execute('CREATE TABLE IF NOT EXISTS Assignments (Id INT, User_id INT, Task_id INT, FOREIGN KEY(User_id) REFERENCES Users(Id))')
             print('Created table Tasks')
 
-    except mysql.connector.Error as error:
+    except msc.Error as error:
         print("Error connecting to the database:", error)
     finally:
         # Close the database connection
-        if connection.is_connected():
-            cursor.close()
+        if conn.is_connected():
+            cur.close()
             conn.close()
             print("Database connection closed.")
 

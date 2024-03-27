@@ -1,7 +1,7 @@
 from datetime import date
 
 from flask import Flask, render_template, request
-import sqlite3 as sql
+import mysql.connector as msc
 import hashlib
 
 
@@ -15,8 +15,8 @@ def LoginPage():
 def loginForm():
     if request.method == 'POST':
         try:
-            nm = request.form['Username']
-            password = request.form['Password']
+            uname = request.form['Username']
+            pword = request.form['Password']
 
         except:
             placehodler
@@ -34,8 +34,8 @@ def createAccountPage():
 def createAccountForm():
     if request.method == 'POST':
         #try:
-            username = request.form['Username']
-
+            uname = request.form['Username']
+            pword = request.form['Password']
 
             
                 
@@ -61,10 +61,10 @@ def addtsk():
             dscp = request.form['Description']
             dd = request.form['DueDate']
             pr = request.form['Priority']
-            with sql.connect("task_Manager.db") as con:
+            with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword") as con:
                 cur = con.cursor()
 
-                cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority) VALUES (?,?,?,?,?)",
+                cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority) VALUES (%s,%s,%s,%s,%s)",
                             (nm, dscp, date.today(), dd, pr))
 
                 con.commit()
@@ -79,9 +79,8 @@ def addtsk():
 
 @app.route('/listtask', methods=['GET'])
 def listtask():
-    con = sql.connect("task_Manager.db")
-    con.row_factory = sql.Row
-    cur = con.cursor()
+    con = msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword")
+    cur = con.cursor(dictionary=True)
     if request.method == 'GET':
         cur.execute("SELECT Name, DueDate, Description, Priority FROM Tasks")
 
@@ -95,9 +94,8 @@ def listtask():
 
 @app.route('/deletetask', methods=['POST', 'GET'])
 def deletetask():
-    con = sql.connect("task_Manager.db")
-    con.row_factory = sql.Row
-    cur = con.cursor()
+    con = msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword")
+    cur = con.cursor(dictionary=True)
     cur.execute("SELECT Name FROM Tasks")
 
     rows = cur.fetchall()
@@ -107,9 +105,8 @@ def deletetask():
 
 @app.route('/updatetask', methods=['POST', 'GET'])
 def updatetask():
-    con = sql.connect("task_Manager.db")
-    con.row_factory = sql.Row
-    cur = con.cursor()
+    con = msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword")
+    cur = con.cursor(dictionary=True)
 
     cur.execute("SELECT Name FROM Tasks")
 
@@ -123,9 +120,9 @@ def updatingtsk():
         try:
             # noinspection PyUnresolvedReferences
             nm = request.form.get('Name')
-            with sql.connect("task_Manager.db") as con:
+            with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword") as con:
                 cur = con.cursor()
-                cur.execute("DELETE FROM Tasks WHERE Name = ?", (nm,))
+                cur.execute("DELETE FROM Tasks WHERE Name = %s", (nm,))
                 con.commit()
 
         except:
@@ -139,10 +136,10 @@ def deletingtsk():
     if request.method == 'POST':
         try:
             nm = request.form.getlist('Name')
-            with sql.connect("task_Manager.db") as con:
+            with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword") as con:
                 cur = con.cursor()
                 for taskName in nm:
-                    cur.execute("DELETE FROM Tasks WHERE Name = ?", (taskName,))
+                    cur.execute("DELETE FROM Tasks WHERE Name = %s", (taskName,))
                 con.commit()
 
         except:
