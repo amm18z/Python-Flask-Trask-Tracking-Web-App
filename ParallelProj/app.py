@@ -10,6 +10,8 @@ import os
 app = Flask(__name__)
 app.secret_key="anystringhere"
 
+currentUser = ""    # used to keep track of currently logged in user, throughout program
+
 
 @app.route('/')
 def LoginPage():
@@ -18,15 +20,38 @@ def LoginPage():
 @app.route('/loginForm', methods =['POST', 'GET'])
 def loginForm():
     if request.method == 'POST':
-        try:
-            uname = request.form['Username']
-            pword = request.form['Password']
+        
+        uname = request.form['Username']
+        pword = request.form['Password']
 
-        except:
-            placehodler
+        with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+            cur = con.cursor()
 
-        finally:
-            placeholder
+            
+            cur.execute("SELECT UserName, PasswordHash, Salt FROM Users WHERE UserName = %s LIMIT 1", (uname,))
+            row = cur.fetchone()
+            tempPHash = row[1]
+            tempSalt = row[2]
+            if( tempPHash == hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest()):
+                print("given username: ", hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest())
+                print("given password: ", pword)
+                print("salt: ", row[2])
+                print("stored username: ", row[0])
+                print("stored password: ", row[1])
+
+                return render_template('index.html')
+            else:
+                print("given username: ", uname)
+                print("given password: ", hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest())
+                print("salt: ", row[2])
+                print("stored username: ", row[0])
+                print("stored password: ", row[1])
+                return render_template('login.html')
+
+            
+
+
+            
 
 
 
@@ -49,8 +74,8 @@ def createAccountForm():
         # mysql user = one that can receieve roles and permissions via mysql commands
         # username must be the same for both
 
-        salt = os.urandom(16)   # 16 bytes = 128 bits (not sure if database is getting/storing salts correctly: must check on this)
-        pwordHash = hashlib.sha256(salt + pword.encode()).hexdigest()   # salt plus utf-8 encoded password hashed and converted to hexadecimal
+        salt = os.urandom(16).hex()   # 16 bytes = 128 bits (not sure if database is getting/storing salts correctly: must check on this) converted to hex because mySQL can't handle urandom bytes object
+        pwordHash = hashlib.sha256(salt.encode() + pword.encode()).hexdigest()   # salt plus utf-8 encoded password hashed and converted to hexadecimal
 
     
         with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
@@ -72,7 +97,8 @@ def createAccountForm():
                 cur.execute("CREATE USER %s", (uname,))
                 con.commit()
                 con.close()
-                return render_template('index.html')
+                print("Salt: ", salt)
+                return render_template('login.html')
                 
    
             
