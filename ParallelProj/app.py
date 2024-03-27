@@ -49,7 +49,7 @@ def createAccountForm():
         # mysql user = one that can receieve roles and permissions via mysql commands
         # username must be the same for both
 
-        salt = os.urandom(16)   # 16 bytes = 128 bits
+        salt = os.urandom(16)   # 16 bytes = 128 bits (not sure if database is getting/storing salts correctly: must check on this)
         pwordHash = hashlib.sha256(salt + pword.encode()).hexdigest()   # salt plus utf-8 encoded password hashed and converted to hexadecimal
 
     
@@ -61,9 +61,9 @@ def createAccountForm():
                 con.commit()
 
             except msc.Error as err:
-                print("Error executing MySQL query:", err.msg)
-                print("Error code:", err.errno)
-                print("SQLSTATE:", err.sqlstate)
+                #print("Error executing MySQL query:", err.msg)
+                #print("Error code:", err.errno)
+                #print("SQLSTATE:", err.sqlstate)
                 con.rollback()
                 flash('Account creation failed')
                 return render_template('createAccount.html')
