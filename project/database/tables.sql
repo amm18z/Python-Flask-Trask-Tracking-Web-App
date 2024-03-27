@@ -1,5 +1,11 @@
 USE TaskTracker;
 
+CREATE TABLE IF NOT EXISTS `TaskTracker`.`Categories` (
+  `id` INT NOT NULL,
+  `name` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `Name_UNIQUE` (`name` ASC) VISIBLE);
+
 CREATE TABLE IF NOT EXISTS `TaskTracker`.`Tasks` (
   `id` INT NOT NULL,
   `name` VARCHAR(100) NOT NULL,
@@ -35,5 +41,5 @@ CREATE TABLE IF NOT EXISTS `TaskTracker`.`Assignments` (
     REFERENCES `TaskTracker`.`Tasks` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
-    
-show tables;
+        
+SHOW TABLES;

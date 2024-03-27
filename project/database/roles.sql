@@ -1,6 +1,8 @@
 use TaskTracker;
 show tables;
 
+DROP ROLE IF EXISTS Viewer;
+
 DROP ROLE IF EXISTS Worker;
 CREATE ROLE Worker;
 GRANT SELECT ON Assignments TO Worker; 
