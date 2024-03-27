@@ -2,11 +2,48 @@ from datetime import date
 
 from flask import Flask, render_template, request
 import sqlite3 as sql
+import hashlib
 
 
 app = Flask(__name__)
 
 @app.route('/')
+def LoginPage():
+    return render_template('login.html')
+
+@app.route('/loginForm')
+def loginForm():
+    if request.method == 'POST':
+        try:
+            nm = request.form['Username']
+            password = request.form['Password']
+
+        except:
+            placehodler
+
+        finally:
+            placeholder
+
+
+
+@app.route('/createAccountPage')
+def createAccountPage():
+    return render_template('createAccount.html')
+
+@app.route('/createAccountForm')
+def createAccountForm():
+    if request.method == 'POST':
+        #try:
+            username = request.form['Username']
+
+
+            
+                
+            
+            return render_template('index.html')
+
+
+@app.route('/home')
 def home():
     return render_template('index.html')
 
