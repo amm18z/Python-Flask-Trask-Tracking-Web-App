@@ -1,0 +1,20 @@
+<!--2/21/2024 The program in this file is the individual work of Rafael Cardoso RDC21C-->
+
+<html>
+    <body>
+        <h1> Select a Task to Update </h1>
+        <form action="{{ url_for('updatingtsk') }}" method="POST">
+            <table>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row["Name"] }}</td>
+                    <td><input type="radio" name="Name" value="{{ row['Name'] }}"></td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+        <h2><a href="/home">Back to home</a></h2>
+    </body>
+</html>
