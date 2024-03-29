@@ -5,20 +5,25 @@ import mysql.connector as msc
 import hashlib
 import os
 
+# because mysql.connector.connection() objects are pooled, for thread safety, make sure to only call connection() in a 'with' statement (preferred because close() is called automatically upon exiting with block)
+# OR have a finally: block after a try: block, and call myConnection.close() in the finally: block
 
+currentUser=""  # used to keep track of currently logged in user throughout program (To match TaskTracker.Users tuple with MySQL 'CREATE USER' user)
 
 app = Flask(__name__)
-app.secret_key="anystringhere"
-
-currentUser = ""    # used to keep track of currently logged in user, throughout program
+app.secret_key="anystringhere" # if this is removed flashes don't work
 
 
 @app.route('/')
 def LoginPage():
+    global currentUser
+    currentUser = ""    # this line means this route can be used to log out, in addition to logging in
     return render_template('login.html')
 
 @app.route('/loginForm', methods =['POST', 'GET'])
 def loginForm():
+    global currentUser #must explicitly use global keyword if using the global variable 'currentUser' in a function
+
     if request.method == 'POST':
         
         uname = request.form['Username']
@@ -27,31 +32,26 @@ def loginForm():
         with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
             cur = con.cursor()
 
-            
-            cur.execute("SELECT UserName, PasswordHash, Salt FROM Users WHERE UserName = %s LIMIT 1", (uname,))
-            row = cur.fetchone()
-            tempPHash = row[1]
-            tempSalt = row[2]
-            if( tempPHash == hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest()):
-                print("given username: ", hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest())
-                print("given password: ", pword)
-                print("salt: ", row[2])
-                print("stored username: ", row[0])
-                print("stored password: ", row[1])
+            try:
+                cur.execute("SELECT UserName, PasswordHash, Salt FROM Users WHERE UserName = %s LIMIT 1", (uname,))
+                row = cur.fetchone()
+                tempPHash = row[1]
+                tempSalt = row[2]
 
-                return render_template('index.html')
-            else:
-                print("given username: ", uname)
-                print("given password: ", hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest())
-                print("salt: ", row[2])
-                print("stored username: ", row[0])
-                print("stored password: ", row[1])
+            except:
+                flash("User " + uname + " does not exist.")
+                con.close()     # just to be safe, must explicitly close connection before rendering any other templates
                 return render_template('login.html')
 
-            
-
-
-            
+            else:
+                if( tempPHash == hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest()):
+                    currentUser = uname
+                    con.close() #after this, database connection should be using current user's account, not admin
+                    return render_template('index.html', curUser = currentUser)
+                else:
+                    flash("Login failed.")
+                    con.close() # 3/29/24 realized that connections must be closed within the same scope they're opened in. Kinda expensive and wasteful, but there's no way to preserve a specific connection object across scope
+                    return render_template('login.html')         
 
 
 
@@ -90,24 +90,21 @@ def createAccountForm():
                 #print("Error code:", err.errno)
                 #print("SQLSTATE:", err.sqlstate)
                 con.rollback()
-                flash('Account creation failed')
+                flash('Account creation failed.')
                 return render_template('createAccount.html')
 
             else:
                 cur.execute("CREATE USER %s", (uname,))
+                cur.execute("GRANT FreeUserRole TO %s", (uname,))
                 con.commit()
-                con.close()
-                print("Salt: ", salt)
+                flash('Account ' + uname + ' created sucessfully.')
                 return render_template('login.html')
-                
-   
-            
-    # return render_template('index.html')
 
 
 @app.route('/home')
 def home():
-    return render_template('index.html')
+    global currentUser
+    return render_template('index.html', curUser = currentUser)
 
 
 @app.route('/newtask')
@@ -117,13 +114,17 @@ def new_task():
 
 @app.route('/addtask', methods=['POST', 'GET'])
 def addtsk():
+    global currentUser
     if request.method == 'POST':
-        try:
-            nm = request.form['Name']
-            dscp = request.form['Description']
-            dd = request.form['DueDate']
-            pr = request.form['Priority']
-            with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+        
+        nm = request.form['Name']
+        dscp = request.form['Description']
+        dd = request.form['DueDate']
+        pr = request.form['Priority']
+        
+        with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin", password="masterpassword", database='TaskTracker') as con:
+                
+            try:
                 cur = con.cursor()
 
                 cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority) VALUES (%s,%s,%s,%s,%s)",
@@ -131,24 +132,25 @@ def addtsk():
 
                 con.commit()
 
-        except:
-            con.rollback()
+            except:
+                con.rollback()
 
-        finally:
-            con.close()
-            return render_template('index.html')
+            finally:
+                #con.close()    # realized that con.close() is unneccesary if connect() is preceded by the 'with' keyword. ( close() is automatically called upon exiting with block )
+                return render_template('index.html', curUser = currentUser)
 
 
 @app.route('/listtask', methods=['GET'])
 def listtask():
-    con = msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')
-    cur = con.cursor(dictionary=True)
     if request.method == 'GET':
-        cur.execute("SELECT Name, DueDate, Description, Priority FROM Tasks")
+        with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+            cur = con.cursor(dictionary=True)
+            
+            cur.execute("SELECT Name, DueDate, Description, Priority FROM Tasks")
 
-        rows = cur.fetchall()
+            rows = cur.fetchall()
 
-        return render_template("listTasks.html", rows=rows)
+            return render_template("listTasks.html", rows=rows)
 
     else:
         return "This route only accepts GET requests."
@@ -156,59 +158,67 @@ def listtask():
 
 @app.route('/deletetask', methods=['POST', 'GET'])
 def deletetask():
-    con = msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')
-    cur = con.cursor(dictionary=True)
-    cur.execute("SELECT Name FROM Tasks")
+    with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute("SELECT Name FROM Tasks")
 
-    rows = cur.fetchall()
+        rows = cur.fetchall()
 
-    return render_template("deleteTask.html", rows=rows)
+        return render_template("deleteTask.html", rows=rows)
 
 
 @app.route('/updatetask', methods=['POST', 'GET'])
 def updatetask():
-    con = msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')
-    cur = con.cursor(dictionary=True)
+    with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+        cur = con.cursor(dictionary=True)
 
-    cur.execute("SELECT Name FROM Tasks")
+        cur.execute("SELECT Name FROM Tasks")
 
-    rows = cur.fetchall()
+        rows = cur.fetchall()
 
-    return render_template("updateTask.html", rows=rows)
+        return render_template("updateTask.html", rows=rows)
+
 
 @app.route('/updatingtask', methods=['POST', 'GET'])
 def updatingtsk():
     if request.method == 'POST':
-        try:
             # noinspection PyUnresolvedReferences
-            nm = request.form.get('Name')
-            with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
-                cur = con.cursor()
+        nm = request.form.get('Name')
+
+        with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+            cur = con.cursor()
+            
+            try:
                 cur.execute("DELETE FROM Tasks WHERE Name = %s", (nm,))
                 con.commit()
 
-        except:
-            con.rollback()
+            except:
+                con.rollback()
 
-        finally:
-            return render_template('updateThisTask.html')
+            finally:
+                return render_template('updateThisTask.html')
+
 
 @app.route('/deletingtask', methods=['POST', 'GET'])
 def deletingtsk():
-    if request.method == 'POST':
-        try:
-            nm = request.form.getlist('Name')
-            with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
-                cur = con.cursor()
+    global currentUser
+    if request.method == 'POST':\
+    
+        nm = request.form.getlist('Name')
+
+        with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+            cur = con.cursor()
+
+            try:
                 for taskName in nm:
                     cur.execute("DELETE FROM Tasks WHERE Name = %s", (taskName,))
                 con.commit()
 
-        except:
-            con.rollback()
+            except:
+                con.rollback()
 
-        finally:
-            return render_template('index.html')
+            finally:
+                return render_template('index.html', curUser = currentUser)
 
 
 if __name__ == '__main__':

@@ -29,6 +29,15 @@ def setup_database():
             cur.execute('CREATE TABLE Assignments (Id INT, User_id INT, Task_id INT, FOREIGN KEY(User_id) REFERENCES Users(Id))')
             print('Created table Assignments')
 
+            cur.execute("CREATE ROLE FreeUserRole")
+            cur.execute("GRANT SELECT, INSERT ON TaskTracker.Tasks TO FreeUserRole")
+
+            cur.execute("CREATE ROLE PremiumUserRole")
+            cur.execute("GRANT SELECT, INSERT ON TaskTracker.Tasks TO FreeUserRole")
+
+            cur.execute("CREATE ROLE AdministratorRole")
+            cur.execute("GRANT ALL PRIVILEGES ON TaskTracker.* TO AdministratorRole")
+
             conn.commit()
 
     except msc.Error as error:

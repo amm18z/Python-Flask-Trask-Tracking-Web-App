@@ -1,6 +1,14 @@
 <!--3/27/2024 The program in this file is the individual work of Aidan McGill amm18z-->
 
 <html>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                {{message}}
+            {%endfor%}
+        {%endif%}
+    {%endwith%}
+    
     <body>
         <h1> Task Tracker </h1>
         <form action = "{{ url_for('loginForm') }}" method = "POST">
