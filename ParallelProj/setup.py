@@ -19,23 +19,23 @@ def setup_database():
 
             cur.execute("USE TaskTracker")
 
-            cur.execute("CREATE TABLE Users (Id INT AUTO_INCREMENT PRIMARY KEY, UserName VARCHAR(20), PasswordHash VARCHAR(500), Salt VARCHAR(100))")
+            cur.execute("CREATE TABLE IF NOT EXISTS Users (Id INT AUTO_INCREMENT PRIMARY KEY, UserName VARCHAR(20), PasswordHash VARCHAR(500), Salt VARCHAR(100))")
             print('Created table Users')
 
-            cur.execute("CREATE TABLE Tasks (Id INT AUTO_INCREMENT PRIMARY KEY, Name VARCHAR(100), Description VARCHAR(200),"
+            cur.execute("CREATE TABLE IF NOT EXISTS Tasks (Id INT AUTO_INCREMENT PRIMARY KEY, Name VARCHAR(100), Description VARCHAR(200),"
                         "CreationDate DATE, DueDate DATE, Priority INT, User_id INT, FOREIGN KEY(User_id) REFERENCES Users(Id))")
             print('Created table Tasks')
 
-            cur.execute('CREATE TABLE Assignments (Id INT, User_id INT, Task_id INT, FOREIGN KEY(User_id) REFERENCES Users(Id))')
+            cur.execute('CREATE TABLE IF NOT EXISTS Assignments (Id INT AUTO_INCREMENT PRIMARY KEY, User_id INT, Task_id INT, FOREIGN KEY(User_id) REFERENCES Users(Id))')
             print('Created table Assignments')
 
-            cur.execute("CREATE ROLE FreeUserRole")
+            cur.execute("CREATE ROLE IF NOT EXISTS FreeUserRole")
             cur.execute("GRANT SELECT, INSERT ON TaskTracker.Tasks TO FreeUserRole")
 
-            cur.execute("CREATE ROLE PremiumUserRole")
-            cur.execute("GRANT SELECT, INSERT ON TaskTracker.Tasks TO FreeUserRole")
+            cur.execute("CREATE ROLE IF NOT EXISTS PremiumUserRole")
+            cur.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON TaskTracker.Tasks TO PremiumUserRole")
 
-            cur.execute("CREATE ROLE AdministratorRole")
+            cur.execute("CREATE ROLE IF NOT EXISTS AdministratorRole")
             cur.execute("GRANT ALL PRIVILEGES ON TaskTracker.* TO AdministratorRole")
 
             conn.commit()

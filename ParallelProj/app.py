@@ -7,6 +7,7 @@ import os
 
 # because mysql.connector.connection() objects are pooled, for thread safety, make sure to only call connection() in a 'with' statement (preferred because close() is called automatically upon exiting with block)
 # OR have a finally: block after a try: block, and call myConnection.close() in the finally: block
+# see for more details on 'Context Managers and Python's with Statement': https://realpython.com/python-with-statement/
 
 currentUser=""  # used to keep track of currently logged in user throughout program (To match TaskTracker.Users tuple with MySQL 'CREATE USER' user)
 
@@ -46,11 +47,10 @@ def loginForm():
             else:
                 if( tempPHash == hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest()):
                     currentUser = uname
-                    con.close() #after this, database connection should be using current user's account, not admin
+                    # after this, database connection should be using current user, not admin user
                     return render_template('index.html', curUser = currentUser)
                 else:
                     flash("Login failed.")
-                    con.close() # 3/29/24 realized that connections must be closed within the same scope they're opened in. Kinda expensive and wasteful, but there's no way to preserve a specific connection object across scope
                     return render_template('login.html')         
 
 
@@ -94,8 +94,8 @@ def createAccountForm():
                 return render_template('createAccount.html')
 
             else:
-                cur.execute("CREATE USER %s", (uname,))
-                cur.execute("GRANT FreeUserRole TO %s", (uname,))
+                #cur.execute("CREATE USER %s", (uname,))        # currently causes exception if MySQL user already exists, should use another try...except...else to handle this error
+                #cur.execute("GRANT FreeUserRole TO %s", (uname,))      # currently admin user can't grant roles or privileges to users for some reason, given error: mysql.connector.errors.ProgrammingError: 1227 (42000): Access denied; you need (at least one of) the WITH ADMIN, ROLE_ADMIN, SUPER privilege(s) for this operation
                 con.commit()
                 flash('Account ' + uname + ' created sucessfully.')
                 return render_template('login.html')
