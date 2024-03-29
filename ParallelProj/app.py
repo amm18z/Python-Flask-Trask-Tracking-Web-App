@@ -10,6 +10,9 @@ import os
 # see for more details on 'Context Managers and Python's with Statement': https://realpython.com/python-with-statement/
 
 currentUser=""  # used to keep track of currently logged in user throughout program (To match TaskTracker.Users tuple with MySQL 'CREATE USER' user)
+                # not sure if this is properly 'distributed'. Is currentUser unique to each flask website connection, or shared across all of them? Bad if shared
+                # Just learned the following: "When running the development server - which is what you get by running app.run(), you get a single synchronous process, which means at most 1 request is being processed at a time."
+                # okay so as long as we don't have to deploy the flask application itself, it seems we can check the distributed box by just using locks and transactions with database queries
 
 app = Flask(__name__)
 app.secret_key="anystringhere" # if this is removed flashes don't work
