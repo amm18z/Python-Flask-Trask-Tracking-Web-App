@@ -19,14 +19,29 @@ def setup_database():
 
             cur.execute("USE TaskTracker")
 
-            cur.execute("CREATE TABLE IF NOT EXISTS Users (Id INT AUTO_INCREMENT PRIMARY KEY, UserName VARCHAR(20), PasswordHash VARCHAR(500), Salt VARCHAR(100))")
+            cur.execute("CREATE TABLE IF NOT EXISTS Users ("
+                        "Id INT AUTO_INCREMENT PRIMARY KEY,"
+                        "UserName VARCHAR(20),"
+                        "PasswordHash VARCHAR(500),"
+                        "Salt VARCHAR(100),"
+                        "CONSTRAINT username_unique UNIQUE (UserName) )")
             print('Created table Users')
 
-            cur.execute("CREATE TABLE IF NOT EXISTS Tasks (Id INT AUTO_INCREMENT PRIMARY KEY, Name VARCHAR(100), Description VARCHAR(200),"
-                        "CreationDate DATE, DueDate DATE, Priority INT, User_id INT, FOREIGN KEY(User_id) REFERENCES Users(Id))")
+            cur.execute("CREATE TABLE IF NOT EXISTS Tasks ("
+                        "Id INT AUTO_INCREMENT PRIMARY KEY,"
+                        "Name VARCHAR(100),"
+                        "Description VARCHAR(200),"
+                        "CreationDate DATE,"
+                        "DueDate DATE,"
+                        "Priority INT,"
+                        "User_id INT,"
+                        "FOREIGN KEY(User_id) REFERENCES Users(Id) )")
             print('Created table Tasks')
 
-            cur.execute('CREATE TABLE IF NOT EXISTS Assignments (Id INT AUTO_INCREMENT PRIMARY KEY, User_id INT, Task_id INT, FOREIGN KEY(User_id) REFERENCES Users(Id))')
+            cur.execute("CREATE TABLE IF NOT EXISTS Assignments ("
+                        "Id INT AUTO_INCREMENT PRIMARY KEY,"
+                        "User_id INT, Task_id INT,"
+                        "FOREIGN KEY(User_id) REFERENCES Users(Id) )")
             print('Created table Assignments')
 
             cur.execute("CREATE ROLE IF NOT EXISTS FreeUserRole")
