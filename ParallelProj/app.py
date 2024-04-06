@@ -1,7 +1,9 @@
 from datetime import date
 
+import mysql.connector
 from flask import Flask, render_template, request, flash
 import mysql.connector as msc
+from contextlib import closing
 import hashlib
 import os
 
@@ -9,38 +11,42 @@ import os
 # OR have a finally: block after a try: block, and call myConnection.close() in the finally: block
 # see for more details on 'Context Managers and Python's with Statement': https://realpython.com/python-with-statement/
 
-currentUser=""  # used to keep track of currently logged in user throughout program (To match TaskTracker.Users tuple with MySQL 'CREATE USER' user)
+currentUser = ""  # used to keep track of currently logged in user throughout program (To match TaskTracker.Users tuple with MySQL 'CREATE USER' user)
                 # not sure if this is properly 'distributed'. Is currentUser unique to each flask website connection, or shared across all of them? Bad if shared
                 # Just learned the following: "When running the development server - which is what you get by running app.run(), you get a single synchronous process, which means at most 1 request is being processed at a time."
                 # okay so as long as we don't have to deploy the flask application itself, it seems we can check the distributed box by just using locks and transactions with database queries
+currentId = -1  #Currently the app has no way of getting the id to the task and as such every task is shown instead of only the tasks of the current user
 
 app = Flask(__name__)
 app.secret_key="anystringhere" # if this is removed flashes don't work
 
-
 @app.route('/')
 def LoginPage():
     global currentUser
+    global currentId
     currentUser = ""    # this line means this route can be used to log out, in addition to logging in
+    currentId = -1
     return render_template('login.html')
 
 @app.route('/loginForm', methods =['POST', 'GET'])
 def loginForm():
     global currentUser #must explicitly use global keyword if using the global variable 'currentUser' in a function
+    global currentId
 
     if request.method == 'POST':
         
         uname = request.form['Username']
         pword = request.form['Password']
 
-        with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor()
 
             try:
-                cur.execute("SELECT UserName, PasswordHash, Salt FROM Users WHERE UserName = %s LIMIT 1", (uname,))
+                cur.execute("SELECT UserName, PasswordHash, Salt, Id FROM Users WHERE UserName = %s LIMIT 1", (uname,))
                 row = cur.fetchone()
                 tempPHash = row[1]
                 tempSalt = row[2]
+                currentId = row[3]
 
             except:
                 flash("User " + uname + " does not exist.")
@@ -54,7 +60,7 @@ def loginForm():
                     return render_template('index.html', curUser = currentUser)
                 else:
                     flash("Login failed.")
-                    return render_template('login.html')         
+                    return render_template('login.html')
 
 
 
@@ -80,7 +86,7 @@ def createAccountForm():
         
 
     
-        with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor()
 
             try:
@@ -118,22 +124,23 @@ def new_task():
 
 
 @app.route('/addtask', methods=['POST', 'GET'])
-def addtsk():
+def addtask():
     global currentUser
+    global currentId
     if request.method == 'POST':
         
         nm = request.form['Name']
         dscp = request.form['Description']
         dd = request.form['DueDate']
         pr = request.form['Priority']
-        
-        with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin", password="masterpassword", database='TaskTracker') as con:
-                
+
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+
             try:
                 cur = con.cursor()
 
-                cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority) VALUES (%s,%s,%s,%s,%s)",
-                            (nm, dscp, date.today(), dd, pr))
+                cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority,User_id) VALUES (%s,%s,%s,%s,%s,%s)",
+                            (nm, dscp, date.today(), dd, pr, currentId))
 
                 con.commit()
 
@@ -144,15 +151,45 @@ def addtsk():
                 #con.close()    # realized that con.close() is unneccesary if connect() is preceded by the 'with' keyword. ( close() is automatically called upon exiting with block )
                 return render_template('index.html', curUser = currentUser)
 
-
-@app.route('/listtask', methods=['GET'])
-def listtask():
+@app.route('/listtask/<order>/<sort>', methods=['GET'])
+def listtask(order, sort):
+    global currentId
     if request.method == 'GET':
-        with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor(dictionary=True)
-            
-            cur.execute("SELECT Name, DueDate, Description, Priority FROM Tasks")
+            if order == "a":
+                if sort == "id":
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Id ASC", (currentId,))
+                elif sort == "name":
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Name ASC", (currentId,))
+                elif sort == "descr":
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Description ASC", (currentId,))
+                elif sort == "creation_date":
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY CreationDate ASC", (currentId,))
+                elif sort == "due_date":
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY DueDate ASC", (currentId,))
+                elif sort == "priority":
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Priority ASC", (currentId,))
+                else:
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s", (currentId,))
 
+            elif order == "d":
+                if sort == "id":
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Id DESC", (currentId,))
+                elif sort == "name":
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Name DESC", (currentId,))
+                elif sort == "descr":
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Description DESC", (currentId,))
+                elif sort == "creation_date":
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY CreationDate DESC", (currentId,))
+                elif sort == "due_date":
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY DueDate DESC", (currentId,))
+                elif sort == "priority":
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Priority DESC", (currentId,))
+                else:
+                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s", (currentId,))
+            else:
+                cur.execute("SELECT id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s", (currentId,))
             rows = cur.fetchall()
 
             return render_template("listTasks.html", rows=rows)
@@ -160,12 +197,12 @@ def listtask():
     else:
         return "This route only accepts GET requests."
 
-
 @app.route('/deletetask', methods=['POST', 'GET'])
 def deletetask():
-    with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+    global currentId
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
         cur = con.cursor(dictionary=True)
-        cur.execute("SELECT Name FROM Tasks")
+        cur.execute("SELECT Name FROM Tasks WHERE User_id=%s", (currentId,))
 
         rows = cur.fetchall()
 
@@ -174,10 +211,11 @@ def deletetask():
 
 @app.route('/updatetask', methods=['POST', 'GET'])
 def updatetask():
-    with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+    global currentId
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
         cur = con.cursor(dictionary=True)
 
-        cur.execute("SELECT Name FROM Tasks")
+        cur.execute("SELECT Name FROM Tasks WHERE User_id=%s", (currentId,))
 
         rows = cur.fetchall()
 
@@ -190,7 +228,7 @@ def updatingtsk():
             # noinspection PyUnresolvedReferences
         nm = request.form.get('Name')
 
-        with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor()
             
             try:
@@ -207,11 +245,11 @@ def updatingtsk():
 @app.route('/deletingtask', methods=['POST', 'GET'])
 def deletingtsk():
     global currentUser
-    if request.method == 'POST':\
+    if request.method == 'POST':
     
         nm = request.form.getlist('Name')
 
-        with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor()
 
             try:
