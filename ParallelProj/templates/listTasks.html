@@ -23,7 +23,6 @@
             <td>Date Made</td>
             <td>Due Date</td>
             <td>Priority</td>
-            <td>User_ID</td>
          </thead>
          
          {% for row in rows %}
@@ -33,8 +32,7 @@
                <td>{{row["Description"]}}</td>
                <td>{{row["CreationDate"]}}</td>
                <td>{{row["DueDate"]}}</td>	
-               <td>{{row["Priority"]}}</td>	
-               <td>{{row["User_id"]}}</td>
+               <td>{{row["Priority"]}}</td>
             </tr>
          {% endfor %}
       </table>
