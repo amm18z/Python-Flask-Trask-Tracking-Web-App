@@ -92,9 +92,12 @@ def createAccountForm():
             try:
                 salt = os.urandom(16).hex()   # 16 bytes = 128 bits (not sure if database is getting/storing salts correctly: must check on this) converted to hex because mySQL can't handle urandom bytes object
                 pwordHash = hashlib.sha256(salt.encode() + pword.encode()).hexdigest()   # salt plus utf-8 encoded password hashed and converted to hexadecimal
-                
-                cur.execute("INSERT INTO Users (UserName, PasswordHash, Salt) VALUES (%s, %s, %s)", (uname, pwordHash, salt))
-                con.commit()
+                if doesntExist(uname, pword):
+                    cur.execute("INSERT INTO Users (UserName, PasswordHash, Salt) VALUES (%s, %s, %s)", (uname, pwordHash, salt))
+                    con.commit()
+                else:
+                    flash("Username already taken, please try again")
+                    return render_template('createAccount.html')
 
             except msc.Error as err:
                 #print("Error executing MySQL query:", err.msg)
@@ -105,18 +108,33 @@ def createAccountForm():
                 return render_template('createAccount.html')
 
             else:
-                #cur.execute("CREATE USER %s", (uname,))        # currently causes exception if MySQL user already exists, should use another try...except...else to handle this error
-                #cur.execute("GRANT FreeUserRole TO %s", (uname,))      # currently admin user can't grant roles or privileges to users for some reason, given error: mysql.connector.errors.ProgrammingError: 1227 (42000): Access denied; you need (at least one of) the WITH ADMIN, ROLE_ADMIN, SUPER privilege(s) for this operation
+                cur.execute("CREATE USER %s", (uname,))        # currently causes exception if MySQL user already exists, should use another try...except...else to handle this error
+                cur.execute("GRANT FreeUserRole TO %s", (uname,))      # currently admin user can't grant roles or privileges to users for some reason, given error: mysql.connector.errors.ProgrammingError: 1227 (42000): Access denied; you need (at least one of) the WITH ADMIN, ROLE_ADMIN, SUPER privilege(s) for this operation
                 con.commit()
                 flash('Account ' + uname + ' created sucessfully.')
                 return render_template('login.html')
+
+def doesntExist(user, passwrd):
+    with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                     password="masterpassword", database='TaskTracker') as con:
+        cur = con.cursor()
+        cur.execute("SELECT PasswordHash, Salt FROM Users WHERE UserName = %s", (user,))
+        users = cur.fetchall()
+        if len(users) == 0:
+            return True
+        else:
+            for usr in users:
+                pswd = usr[0]
+                salt = usr[1]
+                if hashlib.sha256(salt.encode() + passwrd.encode()).hexdigest() == pswd:
+                    return False
+            return True
 
 
 @app.route('/home')
 def home():
     global currentUser
-    return render_template('index.html', curUser = currentUser)
-
+    return render_template('index.html', curUser=currentUser)
 
 @app.route('/newtask')
 def new_task():
@@ -200,26 +218,39 @@ def listtask(order, sort):
 @app.route('/deletetask', methods=['POST', 'GET'])
 def deletetask():
     global currentId
+    global currentUser
     with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
-        cur = con.cursor(dictionary=True)
-        cur.execute("SELECT Name FROM Tasks WHERE User_id=%s", (currentId,))
+        try:
+            cur = con.cursor(dictionary=True)
+            cur.execute("SELECT Name FROM Tasks WHERE User_id=%s", (currentId,))
 
-        rows = cur.fetchall()
+            rows = cur.fetchall()
 
-        return render_template("deleteTask.html", rows=rows)
+        except:
+            flash("You have to be a premium user to access this feature!")
+            return render_template('index.html', curUser=currentUser)
+
+        finally:
+            return render_template("deleteTask.html", rows=rows)
 
 
 @app.route('/updatetask', methods=['POST', 'GET'])
 def updatetask():
     global currentId
     with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
-        cur = con.cursor(dictionary=True)
+        try:
+            cur = con.cursor(dictionary=True)
 
-        cur.execute("SELECT Name FROM Tasks WHERE User_id=%s", (currentId,))
+            cur.execute("SELECT Name FROM Tasks WHERE User_id=%s", (currentId,))
 
-        rows = cur.fetchall()
+            rows = cur.fetchall()
 
-        return render_template("updateTask.html", rows=rows)
+        except:
+            flash("You have to be a premium user to access this feature!")
+            return render_template('index.html', curUser=currentUser)
+
+        finally:
+            return render_template("updateTask.html", rows=rows)
 
 
 @app.route('/updatingtask', methods=['POST', 'GET'])
