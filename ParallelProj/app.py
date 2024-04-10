@@ -130,6 +130,28 @@ def doesntExist(user, passwrd):
                     return False
             return True
 
+@app.route('/changeRole')
+def flipUserRole():
+    global currentUser
+    with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                     password="masterpassword", database='TaskTracker') as con:
+        cur = con.cursor()
+        cur.execute("SHOW GRANTS FOR %s", (currentUser,))
+        grants = cur.fetchall()
+        if len(grants) > 4:
+            cur.execute("REVOKE PremiumUserRole FROM %s", (currentUser,))
+            cur.execute("GRANT FreeUserRole TO %s", (currentUser,))
+            con.commit()
+            flash('Account ' + currentUser + ' role changed successfully.')
+            return render_template('index.html')
+        else:
+            cur.execute("REVOKE FreeUserRole FROM %s", (currentUser,))
+            cur.execute("GRANT PremiumUserRole TO %s", (currentUser,))
+            con.commit()
+            flash('Account ' + currentUser + ' role changed successfully.')
+            return render_template('index.html')
+
+
 
 @app.route('/home')
 def home():
