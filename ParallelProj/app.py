@@ -247,13 +247,11 @@ def deletetask():
             cur.execute("SELECT Name FROM Tasks WHERE User_id=%s", (currentId,))
 
             rows = cur.fetchall()
-
+            return render_template("deleteTask.html", rows=rows)
         except:
             flash("You have to be a premium user to access this feature!")
             return render_template('index.html', curUser=currentUser)
 
-        finally:
-            return render_template("deleteTask.html", rows=rows)
 
 
 @app.route('/updatetask', methods=['POST', 'GET'])
@@ -264,15 +262,11 @@ def updatetask():
             cur = con.cursor(dictionary=True)
 
             cur.execute("SELECT Name FROM Tasks WHERE User_id=%s", (currentId,))
-
             rows = cur.fetchall()
-
+            return render_template("updateTask.html", rows=rows)
         except:
             flash("You have to be a premium user to access this feature!")
             return render_template('index.html', curUser=currentUser)
-
-        finally:
-            return render_template("updateTask.html", rows=rows)
 
 
 @app.route('/updatingtask', methods=['POST', 'GET'])
