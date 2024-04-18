@@ -265,7 +265,9 @@ def deletetask():
     with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
                              password="masterpassword", database='TaskTracker')) as con:
         cur = con.cursor(dictionary=True)
-        cur.execute("SELECT Name FROM Tasks WHERE User_id=%s", (currentId,))
+
+        cur.execute("SELECT Tasks.Id, Tasks.Name FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                    "Assignments.Tasks_Id=Tasks.Id", (currentId,))
 
         rows = cur.fetchall()
 
@@ -279,7 +281,8 @@ def updatetask():
                              password="masterpassword", database='TaskTracker')) as con:
         cur = con.cursor(dictionary=True)
 
-        cur.execute("SELECT Name FROM Tasks WHERE User_id=%s", (currentId,))
+        cur.execute("SELECT Tasks.Id, Tasks.Name FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                    "Assignments.Tasks_Id=Tasks.Id", (currentId,))
 
         rows = cur.fetchall()
 
@@ -290,17 +293,21 @@ def updatetask():
 def updatingtsk():
     if request.method == 'POST':
         # noinspection PyUnresolvedReferences
-        nm = request.form.get('Name')
+        id = request.form.get('Id')
+        print(id)
 
         with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
                                  password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor()
 
             try:
-                cur.execute("DELETE FROM Tasks WHERE Name = %s", (nm,))
+                cur.execute("DELETE FROM Tasks WHERE Tasks.Id = %s", (id,))
+                con.commit()
+                cur.execute("DELETE FROM Assignments WHERE Assignments.Tasks_Id = %s", (id,))
                 con.commit()
 
             except:
+                print("womp womp")
                 con.rollback()
 
             finally:
@@ -312,18 +319,21 @@ def deletingtsk():
     global currentUser
     if request.method == 'POST':
 
-        nm = request.form.getlist('Name')
+        id = request.form.get('Id')
+        print(id)
 
         with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
                                  password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor()
 
             try:
-                for taskName in nm:
-                    cur.execute("DELETE FROM Tasks WHERE Name = %s", (taskName,))
+                cur.execute("DELETE FROM Tasks WHERE Tasks.Id = %s", (id,))
+                con.commit()
+                cur.execute("DELETE FROM Assignments WHERE Assignments.Tasks_Id = %s", (id,))
                 con.commit()
 
             except:
+                print("womp womp")
                 con.rollback()
 
             finally:
