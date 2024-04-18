@@ -1,9 +1,15 @@
-<!--2/21/2024 The program in this file is the individual work of Rafael Cardoso RDC21C-->
+<!--4/18/2024 The program in this file is the individual work of Rafael Cardoso RDC21C, Judas Smith jms21bi-->
 
 <html>
     <body>
         <h1> Create a New Task </h1>
         <form action = "{{ url_for('addtask') }}" method = "POST">
+            <h2>Categories</h2>
+            {% for row in cats %}
+            <div>
+                <label>{{ row['Id']}}: {{ row['Name']}}</label>
+            </div>
+            {% endfor %}
 
          <h2> Task Information </h2>
 
@@ -11,6 +17,7 @@
             <br>Description:<input type ="text" name = "Description" />
             <br>Due Date:<input type ="datetime-local" name = "DueDate" />
             <br>Priority:<input type ="number" name = "Priority" />
+            <br>Category ID:<input type ="number" name= "CategoryID" />
          <br><input type = "submit" value = "Submit" /><br>
 
          <h2><a href = /home > Back to home</a></h2>

@@ -120,7 +120,12 @@ def home():
 
 @app.route('/newtask')
 def new_task():
-    return render_template('addTask.html')
+    rows = []
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute("SELECT * FROM Categories")
+        rows = cur.fetchall()
+    return render_template('addTask.html', cats=rows)
 
 
 @app.route('/addtask', methods=['POST', 'GET'])
@@ -133,14 +138,15 @@ def addtask():
         dscp = request.form['Description']
         dd = request.form['DueDate']
         pr = request.form['Priority']
+        cid = request.form['CategoryID']
 
         with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
 
             try:
-                cur = con.cursor()
+                cur = con.cursor(dictionary=True)
 
-                cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority,User_id) VALUES (%s,%s,%s,%s,%s,%s)",
-                            (nm, dscp, date.today(), dd, pr, currentId))
+                cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority,Categories_Id) VALUES (%s,%s,%s,%s,%s,%s)",
+                            (nm, dscp, date.today(), dd, pr, cid))
 
                 con.commit()
 
@@ -263,6 +269,27 @@ def deletingtsk():
             finally:
                 return render_template('index.html', curUser = currentUser)
 
+@app.route('/categories', methods=['POST', 'GET'])
+def categories():
+    if request.method == 'POST':
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+            cur = con.cursor(dictionary=True)
+            try:
+                if request.form['Action'] == 'Add':
+                    cur.execute("INSERT INTO Categories(Name) VALUES(%s)", (request.form['Name'],))
+                elif request.form['Action'] == 'Delete':
+                    cur.execute("DELETE FROM Categories WHERE Id = %s", (request.form['Id'],))
+                elif request.form['Action'] == 'Update':
+                    cur.execute("UPDATE Categories SET Name = %s WHERE Id = %s", (request.form['Name'], request.form['Id']))
+                con.commit()
+            except:
+                con.rollback()
+
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute("SELECT * FROM Categories")
+        rows = cur.fetchall()
+        return render_template('categories.html', rows=rows)
 
 if __name__ == '__main__':
     app.run(debug=True)
