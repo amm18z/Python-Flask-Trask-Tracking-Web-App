@@ -149,7 +149,7 @@ def flipUserRole():
             cur.execute("GRANT PremiumUserRole TO %s", (currentUser,))
             con.commit()
             flash('Account ' + currentUser + ' role changed successfully.')
-            return render_template('index.html')
+            return render_template('index.html', curUser = currentUser)
 
 
 
