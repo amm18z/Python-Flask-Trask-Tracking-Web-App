@@ -202,62 +202,70 @@ def listtask(order, sort):
             if order == "a":
                 if sort == "id":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority, Tasks.Categories_Id FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Id ASC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Id ASC", (currentId,))
                 elif sort == "name":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Name ASC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Name ASC", (currentId,))
                 elif sort == "descr":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Description ASC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Description ASC", (currentId,))
                 elif sort == "creation_date":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.CreationDate ASC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.CreationDate ASC", (currentId,))
                 elif sort == "due_date":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.DueDate ASC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.DueDate ASC", (currentId,))
                 elif sort == "priority":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Priority ASC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Priority ASC", (currentId,))
+                elif sort == "cat":
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Category ASC", (currentId,))
                 else:
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Id ASC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Id ASC", (currentId,))
 
             elif order == "d":
                 if sort == "id":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Id DESC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Id DESC", (currentId,))
                 elif sort == "name":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Name DESC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Name DESC", (currentId,))
                 elif sort == "descr":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Description DESC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Description DESC", (currentId,))
                 elif sort == "creation_date":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.CreationDate DESC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.CreationDate DESC", (currentId,))
                 elif sort == "due_date":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.DueDate DESC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.DueDate DESC", (currentId,))
                 elif sort == "priority":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Priority DESC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Priority DESC", (currentId,))
+                elif sort == "cat":
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Category DESC", (currentId,))
                 else:
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Id DESC", (currentId,))
+                                "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Id DESC", (currentId,))
             rows = cur.fetchall()
 
             return render_template("listTasks.html", rows=rows)
