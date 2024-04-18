@@ -181,7 +181,7 @@ def addtask():
                 cur.execute("INSERT INTO Assignments (Tasks_Id,Users_Id) VALUES (%s,%s)", (id[0], currentId))
                 con.commit()
 
-            except mysql.connector.Error as err:
+            except msc.Error as err:
                 print("Error Code:", err.errno)
                 print("SQLSTATE:", err.sqlstate)
                 print("Message:", err.msg)
@@ -313,7 +313,7 @@ def updatingtsk():
                 cur.execute("DELETE FROM Assignments WHERE Assignments.Tasks_Id=%s", (id,))
                 con.commit()
 
-            except mysql.connector.Error as err:
+            except msc.Error as err:
                 print("Error Code:", err.errno)
                 print("SQLSTATE:", err.sqlstate)
                 print("Message:", err.msg)
@@ -341,7 +341,7 @@ def deletingtsk():
                 cur.execute("DELETE FROM Tasks WHERE Id=%s", (id,))
                 con.commit()
 
-            except mysql.connector.Error as err:
+            except msc.Error as err:
                 print("Error Code:", err.errno)
                 print("SQLSTATE:", err.sqlstate)
                 print("Message:", err.msg)
@@ -366,7 +366,7 @@ def categories():
                     cur.execute("UPDATE Categories SET Name = %s WHERE Id = %s",
                                 (request.form['Name'], request.form['Id']))
                 con.commit()
-            except mysql.connector.Error as err:
+            except msc.Error as err:
                 print("Error Code:", err.errno)
                 print("SQLSTATE:", err.sqlstate)
                 print("Message:", err.msg)
