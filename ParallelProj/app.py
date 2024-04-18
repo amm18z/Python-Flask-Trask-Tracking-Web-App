@@ -291,5 +291,19 @@ def categories():
         rows = cur.fetchall()
         return render_template('categories.html', rows=rows)
 
+@app.route('/alltables', methods=['POST', 'GET'])
+def allTables():
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute("SELECT * FROM Assignments")
+        assi = cur.fetchall()
+        cur.execute("SELECT * FROM Categories")
+        cats = cur.fetchall()
+        cur.execute("SELECT * FROM Tasks")
+        tsks = cur.fetchall()
+        cur.execute("SELECT * FROM Users")
+        usrs = cur.fetchall()
+        return render_template('allTables.html', assignments = assi, categories=cats, tasks = tsks, users = usrs)
+
 if __name__ == '__main__':
     app.run(debug=True)
