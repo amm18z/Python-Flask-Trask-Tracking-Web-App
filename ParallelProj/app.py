@@ -144,7 +144,6 @@ def become_premium():
     return render_template('changePrivileges.html')
 
 
-
 @app.route('/addtask', methods=['POST', 'GET'])
 def addtask():
     global currentUser
@@ -160,9 +159,18 @@ def addtask():
                                  password="masterpassword", database='TaskTracker')) as con:
 
             try:
+                current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+                print(current_time)
+                print(dd)
                 cur = con.cursor()
                 cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority) VALUES (%s,%s,%s,%s,%s)"
-                            , (nm, dscp, datetime.now(), dd, pr))
+                            , (nm, dscp, current_time, dd, pr))
+                con.commit()
+                cur.execute(
+                    "SELECT Id FROM Tasks WHERE Name=%s AND Description=%s AND Priority=%s AND DueDate=%s AND CreationDate=%s",
+                    (nm, dscp, pr, dd, current_time))
+                id = cur.fetchone()
+                cur.execute("INSERT INTO Assignments (Tasks_Id,Users_Id) VALUES (%s,%s)", (id[0], currentId))
                 con.commit()
 
             except:
@@ -181,40 +189,65 @@ def listtask(order, sort):
         with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
                                  password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor(dictionary=True)
-            """if order == "a":
-                if sort == "id":"""
-            cur.execute(
-                "SELECT Id, Name, Description, CreationDate, DueDate, Priority FROM Tasks ORDER BY Id ASC")
-            """elif sort == "name":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Name ASC", (currentId,))
+            if order == "a":
+                if sort == "id":
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Id ASC", (currentId,))
+                elif sort == "name":
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Name ASC", (currentId,))
                 elif sort == "descr":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Description ASC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Description ASC", (currentId,))
                 elif sort == "creation_date":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY CreationDate ASC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.CreationDate ASC", (currentId,))
                 elif sort == "due_date":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY DueDate ASC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.DueDate ASC", (currentId,))
                 elif sort == "priority":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Priority ASC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Priority ASC", (currentId,))
                 else:
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Id ASC", (currentId,))
 
             elif order == "d":
                 if sort == "id":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Id DESC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Id DESC", (currentId,))
                 elif sort == "name":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Name DESC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Name DESC", (currentId,))
                 elif sort == "descr":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Description DESC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Description DESC", (currentId,))
                 elif sort == "creation_date":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY CreationDate DESC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.CreationDate DESC", (currentId,))
                 elif sort == "due_date":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY DueDate DESC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.DueDate DESC", (currentId,))
                 elif sort == "priority":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Priority DESC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Priority DESC", (currentId,))
                 else:
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s", (currentId,))
-            else:
-                cur.execute("SELECT id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s", (currentId,))"""
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Id DESC", (currentId,))
             rows = cur.fetchall()
 
             return render_template("listTasks.html", rows=rows)
