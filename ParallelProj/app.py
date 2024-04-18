@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import mysql.connector
 from flask import Flask, render_template, request, flash
 import mysql.connector as msc
 from contextlib import closing
