@@ -160,24 +160,28 @@ def addtask():
         dd = request.form['DueDate']
         pr = request.form['Priority']
         cid = request.form['CategoryID']
-
         with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
                                  password="masterpassword", database='TaskTracker')) as con:
 
             try:
                 current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-                cur = con.cursor(dictionary=True)
+                cur = con.cursor()
+                print("before insert tasks")
                 cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority,Categories_Id) VALUES (%s,%s,%s,%s,%s,%s)"
                             , (nm, dscp, current_time, dd, pr, cid))
                 con.commit()
+                print("before select tasks")
                 cur.execute(
-                    "SELECT Id FROM Tasks WHERE Name=%s AND Description=%s AND Priority=%s AND DueDate=%s AND CreationDate=%s",
-                    (nm, dscp, pr, dd, current_time))
+                    "SELECT Id FROM Tasks WHERE Name=%s AND Description=%s AND DueDate=%s AND Priority=%s AND Categories_Id=%s AND CreationDate=%s",
+                    (nm, dscp, dd, pr, cid, current_time))
                 id = cur.fetchone()
+                print(id[0])
+                print("before insert assignments")
                 cur.execute("INSERT INTO Assignments (Tasks_Id,Users_Id) VALUES (%s,%s)", (id[0], currentId))
                 con.commit()
 
             except:
+                print("womp womp")
                 con.rollback()
 
             finally:
@@ -195,7 +199,7 @@ def listtask(order, sort):
             if order == "a":
                 if sort == "id":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
-                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Tasks.Priority, Tasks.Categories_Id FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Id ASC", (currentId,))
                 elif sort == "name":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
