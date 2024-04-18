@@ -8,13 +8,15 @@
 	 <a href = "/listtask/a/descr">Ascending Description</a>
 	 <a href = "/listtask/a/creation_date">Ascending Date Made</a>
 	 <a href = "/listtask/a/due_date">Ascending Due Date</a>
-	 <a href = "/listtask/a/priority">Ascending Priority</a></br>
+	 <a href = "/listtask/a/priority">Ascending Priority</a>
+	 <a href = "/listtask/a/cat">Ascending Category</a></br>
 	 <a href = "/listtask/d/id">Descending ID</a>
 	 <a href = "/listtask/d/name">Descending Name</a>
 	 <a href = "/listtask/d/descr">Descending Description</a>
 	 <a href = "/listtask/d/creation_date">Descending Date Made</a>
 	 <a href = "/listtask/d/due_date">Descending Due Date</a>
-	 <a href = "/listtask/d/priority">Descending Priority</a></br>
+	 <a href = "/listtask/d/priority">Descending Priority</a>
+	 <a href = "/listtask/d/cat">Descending Category</a></br>
       <table border = 1>
          <thead>
             <td>ID</td>
@@ -34,7 +36,7 @@
                <td>{{row["CreationDate"]}}</td>
                <td>{{row["DueDate"]}}</td>	
                <td>{{row["Priority"]}}</td>	
-               <td>{{row["Categories_Id"]}}</td>	
+               <td>{{row["Category"]}}</td>	
             </tr>
          {% endfor %}
       </table>
