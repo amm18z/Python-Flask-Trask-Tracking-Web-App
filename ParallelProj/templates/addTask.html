@@ -4,20 +4,22 @@
     <body>
         <h1> Create a New Task </h1>
         <form action = "{{ url_for('addtask') }}" method = "POST">
-            <h2>Categories</h2>
-            {% for row in cats %}
-            <div>
-                <label>{{ row['Id']}}: {{ row['Name']}}</label>
-            </div>
-            {% endfor %}
 
          <h2> Task Information </h2>
 
          <br>Name:<input type ="text" name = "Name" />
             <br>Description:<input type ="text" name = "Description" />
             <br>Due Date:<input type ="datetime-local" name = "DueDate" />
-            <br>Priority:<input type ="number" name = "Priority" />
-            <br>Category ID:<input type ="number" name= "CategoryID" />
+            <br>Priority:<select name= "Priority" >
+				<option value=3 SELECTED>3: High Priority</option>
+				<option value=2 SELECTED>2: Medium Priority</option>
+				<option value=1 SELECTED>1: Low Priority</option>
+			</select>
+            <br>Category:<select name= "CategoryID" >
+            {% for row in cats %}
+				<option value= "{{row.Id}}" SELECTED>{{row.Id}}: {{row.Name}}</option>
+            {% endfor %}
+			</select>
          <br><input type = "submit" value = "Submit" /><br>
 
          <h2><a href = /home > Back to home</a></h2>
