@@ -1,0 +1,18 @@
+<!--2/21/2024 The program in this file is the individual work of Rafael Cardoso RDC21C and Aidan McGill amm18z-->
+
+<!DOCTYPE html>
+<html>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                {{message}}
+            {%endfor%}
+        {%endif%}
+    {%endwith%}
+   <body>
+      <h1> Change User Privileges </h1>
+      <h2><a href = "/becomefree">Become a Free User</a></h2>
+	  <h2><a href = "/becomepremium">Become a Premium User</a></h2>
+   </body>
+   <a href = /home >Go back to home page</a>
+</html>
