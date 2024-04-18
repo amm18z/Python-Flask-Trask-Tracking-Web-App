@@ -127,6 +127,24 @@ def new_task():
     return render_template('addTask.html')
 
 
+@app.route('/changepriv')
+def change_priv():
+    return (render_template('changePrivileges.html'))
+
+
+@app.route('/becomefree')
+def become_free():
+    flash('Changed user to a free user')
+    return render_template('changePrivileges.html')
+
+
+@app.route('/becomepremium')
+def become_premium():
+    flash('Changed user to a premium user')
+    return render_template('changePrivileges.html')
+
+
+
 @app.route('/addtask', methods=['POST', 'GET'])
 def addtask():
     global currentUser
