@@ -124,7 +124,12 @@ def home():
 
 @app.route('/newtask')
 def new_task():
-    return render_template('addTask.html')
+    rows = []
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute("SELECT * FROM Categories")
+        rows = cur.fetchall()
+    return render_template('addTask.html', cats=rows)
 
 
 @app.route('/changepriv')
@@ -154,17 +159,16 @@ def addtask():
         dscp = request.form['Description']
         dd = request.form['DueDate']
         pr = request.form['Priority']
+        cid = request.form['CategoryID']
 
         with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
                                  password="masterpassword", database='TaskTracker')) as con:
 
             try:
                 current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-                print(current_time)
-                print(dd)
-                cur = con.cursor()
-                cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority) VALUES (%s,%s,%s,%s,%s)"
-                            , (nm, dscp, current_time, dd, pr))
+                cur = con.cursor(dictionary=True)
+                cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority,Categories_Id) VALUES (%s,%s,%s,%s,%s,%s)"
+                            , (nm, dscp, current_time, dd, pr, cid))
                 con.commit()
                 cur.execute(
                     "SELECT Id FROM Tasks WHERE Name=%s AND Description=%s AND Priority=%s AND DueDate=%s AND CreationDate=%s",
@@ -174,7 +178,6 @@ def addtask():
                 con.commit()
 
             except:
-                print('womp womp')
                 con.rollback()
 
             finally:
@@ -326,6 +329,41 @@ def deletingtsk():
             finally:
                 return render_template('index.html', curUser=currentUser)
 
+@app.route('/categories', methods=['POST', 'GET'])
+def categories():
+    if request.method == 'POST':
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+            cur = con.cursor(dictionary=True)
+            try:
+                if request.form['Action'] == 'Add':
+                    cur.execute("INSERT INTO Categories(Name) VALUES(%s)", (request.form['Name'],))
+                elif request.form['Action'] == 'Delete':
+                    cur.execute("DELETE FROM Categories WHERE Id = %s", (request.form['Id'],))
+                elif request.form['Action'] == 'Update':
+                    cur.execute("UPDATE Categories SET Name = %s WHERE Id = %s", (request.form['Name'], request.form['Id']))
+                con.commit()
+            except:
+                con.rollback()
+
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute("SELECT * FROM Categories")
+        rows = cur.fetchall()
+        return render_template('categories.html', rows=rows)
+
+@app.route('/alltables', methods=['POST', 'GET'])
+def allTables():
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute("SELECT * FROM Assignments")
+        assi = cur.fetchall()
+        cur.execute("SELECT * FROM Categories")
+        cats = cur.fetchall()
+        cur.execute("SELECT * FROM Tasks")
+        tsks = cur.fetchall()
+        cur.execute("SELECT * FROM Users")
+        usrs = cur.fetchall()
+        return render_template('allTables.html', assignments = assi, categories=cats, tasks = tsks, users = usrs)
 
 if __name__ == '__main__':
     app.run(debug=True)
