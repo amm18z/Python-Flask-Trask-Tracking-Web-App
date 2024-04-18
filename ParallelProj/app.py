@@ -155,8 +155,6 @@ def addtask():
 
             finally:
                 #con.close()    # realized that con.close() is unneccesary if connect() is preceded by the 'with' keyword. ( close() is automatically called upon exiting with block )
-                cur.execute("SELECT * FROM Categories")
-                rows = cur.fetchall()
                 return render_template('index.html', curUser = currentUser)
 
 @app.route('/listtask/<order>/<sort>', methods=['GET'])
