@@ -7,8 +7,9 @@
             <table>
                 {% for row in rows %}
                 <tr>
+                    <td>{{ row["Id"] }}:</td>
                     <td>{{ row["Name"] }}</td>
-                    <td><input type="radio" name="Name" value="{{ row['Name'] }}"></td>
+                    <td><input type="radio" name="Id" value="{{ row['Id'] }}"></td>
                 </tr>
                 {% endfor %}
             </table>

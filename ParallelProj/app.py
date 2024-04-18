@@ -1,6 +1,5 @@
-from datetime import date
+from datetime import datetime
 
-import mysql.connector
 from flask import Flask, render_template, request, flash
 import mysql.connector as msc
 from contextlib import closing
@@ -12,33 +11,36 @@ import os
 # see for more details on 'Context Managers and Python's with Statement': https://realpython.com/python-with-statement/
 
 currentUser = ""  # used to keep track of currently logged in user throughout program (To match TaskTracker.Users tuple with MySQL 'CREATE USER' user)
-                # not sure if this is properly 'distributed'. Is currentUser unique to each flask website connection, or shared across all of them? Bad if shared
-                # Just learned the following: "When running the development server - which is what you get by running app.run(), you get a single synchronous process, which means at most 1 request is being processed at a time."
-                # okay so as long as we don't have to deploy the flask application itself, it seems we can check the distributed box by just using locks and transactions with database queries
-currentId = -1  #Currently the app has no way of getting the id to the task and as such every task is shown instead of only the tasks of the current user
+# not sure if this is properly 'distributed'. Is currentUser unique to each flask website connection, or shared across all of them? Bad if shared
+# Just learned the following: "When running the development server - which is what you get by running app.run(), you get a single synchronous process, which means at most 1 request is being processed at a time."
+# okay so as long as we don't have to deploy the flask application itself, it seems we can check the distributed box by just using locks and transactions with database queries
+currentId = -1  # Currently the app has no way of getting the id to the task and as such every task is shown instead of only the tasks of the current user
 
 app = Flask(__name__)
-app.secret_key="anystringhere" # if this is removed flashes don't work
+app.secret_key = "anystringhere"  # if this is removed flashes don't work
+
 
 @app.route('/')
 def LoginPage():
     global currentUser
     global currentId
-    currentUser = ""    # this line means this route can be used to log out, in addition to logging in
+    currentUser = ""  # this line means this route can be used to log out, in addition to logging in
     currentId = -1
     return render_template('login.html')
 
-@app.route('/loginForm', methods =['POST', 'GET'])
+
+@app.route('/loginForm', methods=['POST', 'GET'])
 def loginForm():
-    global currentUser #must explicitly use global keyword if using the global variable 'currentUser' in a function
+    global currentUser  # must explicitly use global keyword if using the global variable 'currentUser' in a function
     global currentId
 
     if request.method == 'POST':
-        
+
         uname = request.form['Username']
         pword = request.form['Password']
 
-        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                                 password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor()
 
             try:
@@ -50,107 +52,67 @@ def loginForm():
 
             except:
                 flash("User " + uname + " does not exist.")
-                con.close()     # just to be safe, must explicitly close connection before rendering any other templates
+                con.close()  # just to be safe, must explicitly close connection before rendering any other templates
                 return render_template('login.html')
 
             else:
-                if( tempPHash == hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest()):
+                if (tempPHash == hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest()):
                     currentUser = uname
                     # after this, database connection should be using current user, not admin user
-                    return render_template('index.html', curUser = currentUser)
+                    return render_template('index.html', curUser=currentUser)
                 else:
                     flash("Login failed.")
                     return render_template('login.html')
-
 
 
 @app.route('/createAccountPage')
 def createAccountPage():
     return render_template('createAccount.html')
 
-@app.route('/createAccountForm', methods =['POST', 'GET'])
+
+@app.route('/createAccountForm', methods=['POST', 'GET'])
 def createAccountForm():
     if request.method == 'POST':
-        
+
         uname = request.form['Username']
         pword = request.form['Password']
 
-        #create mysql user which will exist alongside user
-        #user's mysql username will be used for sql queries
-        #so must keep track of currently logged in user
-        #db username VARCHAR will have to be the same as mysql USER
+        # create mysql user which will exist alongside user
+        # user's mysql username will be used for sql queries
+        # so must keep track of currently logged in user
+        # db username VARCHAR will have to be the same as mysql USER
         # db user = one that we check to see if exists in users table
         # mysql user = one that can receieve roles and permissions via mysql commands
         # username must be the same for both
 
-        
-
-    
-        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                                 password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor()
 
             try:
-                salt = os.urandom(16).hex()   # 16 bytes = 128 bits (not sure if database is getting/storing salts correctly: must check on this) converted to hex because mySQL can't handle urandom bytes object
-                pwordHash = hashlib.sha256(salt.encode() + pword.encode()).hexdigest()   # salt plus utf-8 encoded password hashed and converted to hexadecimal
-                if doesntExist(uname, pword):
-                    cur.execute("INSERT INTO Users (UserName, PasswordHash, Salt) VALUES (%s, %s, %s)", (uname, pwordHash, salt))
-                    con.commit()
-                else:
-                    flash("Username already taken, please try again")
-                    return render_template('createAccount.html')
+                salt = os.urandom(
+                    16).hex()  # 16 bytes = 128 bits (not sure if database is getting/storing salts correctly: must check on this) converted to hex because mySQL can't handle urandom bytes object
+                pwordHash = hashlib.sha256(
+                    salt.encode() + pword.encode()).hexdigest()  # salt plus utf-8 encoded password hashed and converted to hexadecimal
+
+                cur.execute("INSERT INTO Users (UserName, PasswordHash, Salt) VALUES (%s, %s, %s)",
+                            (uname, pwordHash, salt))
+                con.commit()
 
             except msc.Error as err:
-                #print("Error executing MySQL query:", err.msg)
-                #print("Error code:", err.errno)
-                #print("SQLSTATE:", err.sqlstate)
+                # print("Error executing MySQL query:", err.msg)
+                # print("Error code:", err.errno)
+                # print("SQLSTATE:", err.sqlstate)
                 con.rollback()
                 flash('Account creation failed.')
                 return render_template('createAccount.html')
 
             else:
-                cur.execute("CREATE USER %s", (uname,))        # currently causes exception if MySQL user already exists, should use another try...except...else to handle this error
-                cur.execute("GRANT FreeUserRole TO %s", (uname,))      # currently admin user can't grant roles or privileges to users for some reason, given error: mysql.connector.errors.ProgrammingError: 1227 (42000): Access denied; you need (at least one of) the WITH ADMIN, ROLE_ADMIN, SUPER privilege(s) for this operation
+                # cur.execute("CREATE USER %s", (uname,))        # currently causes exception if MySQL user already exists, should use another try...except...else to handle this error
+                # cur.execute("GRANT FreeUserRole TO %s", (uname,))      # currently admin user can't grant roles or privileges to users for some reason, given error: mysql.connector.errors.ProgrammingError: 1227 (42000): Access denied; you need (at least one of) the WITH ADMIN, ROLE_ADMIN, SUPER privilege(s) for this operation
                 con.commit()
                 flash('Account ' + uname + ' created sucessfully.')
                 return render_template('login.html')
-
-def doesntExist(user, passwrd):
-    with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
-                     password="masterpassword", database='TaskTracker') as con:
-        cur = con.cursor()
-        cur.execute("SELECT PasswordHash, Salt FROM Users WHERE UserName = %s", (user,))
-        users = cur.fetchall()
-        if len(users) == 0:
-            return True
-        else:
-            for usr in users:
-                pswd = usr[0]
-                salt = usr[1]
-                if hashlib.sha256(salt.encode() + passwrd.encode()).hexdigest() == pswd:
-                    return False
-            return True
-
-@app.route('/changeRole')
-def flipUserRole():
-    global currentUser
-    with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
-                     password="masterpassword", database='TaskTracker') as con:
-        cur = con.cursor()
-        cur.execute("SHOW GRANTS FOR %s", (currentUser,))
-        grants = cur.fetchall()
-        if len(grants) > 4:
-            cur.execute("REVOKE PremiumUserRole FROM %s", (currentUser,))
-            cur.execute("GRANT FreeUserRole TO %s", (currentUser,))
-            con.commit()
-            flash('Account ' + currentUser + ' role changed successfully.')
-            return render_template('index.html')
-        else:
-            cur.execute("REVOKE FreeUserRole FROM %s", (currentUser,))
-            cur.execute("GRANT PremiumUserRole TO %s", (currentUser,))
-            con.commit()
-            flash('Account ' + currentUser + ' role changed successfully.')
-            return render_template('index.html', curUser = currentUser)
-
 
 
 @app.route('/home')
@@ -158,9 +120,33 @@ def home():
     global currentUser
     return render_template('index.html', curUser=currentUser)
 
+
 @app.route('/newtask')
 def new_task():
-    return render_template('addTask.html')
+    rows = []
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                             password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute("SELECT * FROM Categories")
+        rows = cur.fetchall()
+    return render_template('addTask.html', cats=rows)
+
+
+@app.route('/changepriv')
+def change_priv():
+    return (render_template('changePrivileges.html'))
+
+
+@app.route('/becomefree')
+def become_free():
+    flash('Changed user to a free user')
+    return render_template('changePrivileges.html')
+
+
+@app.route('/becomepremium')
+def become_premium():
+    flash('Changed user to a premium user')
+    return render_template('changePrivileges.html')
 
 
 @app.route('/addtask', methods=['POST', 'GET'])
@@ -168,68 +154,110 @@ def addtask():
     global currentUser
     global currentId
     if request.method == 'POST':
-        
+
         nm = request.form['Name']
         dscp = request.form['Description']
         dd = request.form['DueDate']
         pr = request.form['Priority']
-
-        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+        cid = request.form['CategoryID']
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                                 password="masterpassword", database='TaskTracker')) as con:
 
             try:
+                current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
                 cur = con.cursor()
-
-                cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority,User_id) VALUES (%s,%s,%s,%s,%s,%s)",
-                            (nm, dscp, date.today(), dd, pr, currentId))
-
+                print("before insert tasks")
+                cur.execute(
+                    "INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority,Categories_Id) VALUES (%s,%s,%s,%s,%s,%s)"
+                    , (nm, dscp, current_time, dd, pr, cid))
+                con.commit()
+                print("before select tasks")
+                cur.execute(
+                    "SELECT Id FROM Tasks WHERE Name=%s AND Description=%s AND DueDate=%s AND Priority=%s AND Categories_Id=%s AND CreationDate=%s",
+                    (nm, dscp, dd, pr, cid, current_time))
+                id = cur.fetchone()
+                print(id[0])
+                print("before insert assignments")
+                cur.execute("INSERT INTO Assignments (Tasks_Id,Users_Id) VALUES (%s,%s)", (id[0], currentId))
                 con.commit()
 
-            except:
+            except msc.Error as err:
+                print("Error Code:", err.errno)
+                print("SQLSTATE:", err.sqlstate)
+                print("Message:", err.msg)
                 con.rollback()
 
             finally:
-                #con.close()    # realized that con.close() is unneccesary if connect() is preceded by the 'with' keyword. ( close() is automatically called upon exiting with block )
-                return render_template('index.html', curUser = currentUser)
+                # con.close()    # realized that con.close() is unneccesary if connect() is preceded by the 'with' keyword. ( close() is automatically called upon exiting with block )
+                return render_template('index.html', curUser=currentUser)
+
 
 @app.route('/listtask/<order>/<sort>', methods=['GET'])
 def listtask(order, sort):
     global currentId
     if request.method == 'GET':
-        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                                 password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor(dictionary=True)
             if order == "a":
                 if sort == "id":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Id ASC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority, Tasks.Categories_Id FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Id ASC", (currentId,))
                 elif sort == "name":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Name ASC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Name ASC", (currentId,))
                 elif sort == "descr":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Description ASC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Description ASC", (currentId,))
                 elif sort == "creation_date":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY CreationDate ASC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.CreationDate ASC", (currentId,))
                 elif sort == "due_date":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY DueDate ASC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.DueDate ASC", (currentId,))
                 elif sort == "priority":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Priority ASC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Priority ASC", (currentId,))
                 else:
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Id ASC", (currentId,))
 
             elif order == "d":
                 if sort == "id":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Id DESC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Id DESC", (currentId,))
                 elif sort == "name":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Name DESC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Name DESC", (currentId,))
                 elif sort == "descr":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Description DESC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Description DESC", (currentId,))
                 elif sort == "creation_date":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY CreationDate DESC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.CreationDate DESC", (currentId,))
                 elif sort == "due_date":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY DueDate DESC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.DueDate DESC", (currentId,))
                 elif sort == "priority":
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s ORDER BY Priority DESC", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Priority DESC", (currentId,))
                 else:
-                    cur.execute("SELECT Id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s", (currentId,))
-            else:
-                cur.execute("SELECT id, Name, Description, CreationDate, DueDate, Priority, User_id FROM Tasks WHERE User_id=%s", (currentId,))
+                    cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
+                                "Tasks.Priority FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                                "Assignments.Tasks_Id=Tasks.Id ORDER BY Tasks.Id DESC", (currentId,))
             rows = cur.fetchall()
 
             return render_template("listTasks.html", rows=rows)
@@ -237,52 +265,58 @@ def listtask(order, sort):
     else:
         return "This route only accepts GET requests."
 
+
 @app.route('/deletetask', methods=['POST', 'GET'])
 def deletetask():
     global currentId
-    global currentUser
-    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
-        try:
-            cur = con.cursor(dictionary=True)
-            cur.execute("SELECT Name FROM Tasks WHERE User_id=%s", (currentId,))
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                             password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor(dictionary=True)
 
-            rows = cur.fetchall()
-            return render_template("deleteTask.html", rows=rows)
-        except:
-            flash("You have to be a premium user to access this feature!")
-            return render_template('index.html', curUser=currentUser)
+        cur.execute("SELECT Tasks.Id, Tasks.Name FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                    "Assignments.Tasks_Id=Tasks.Id", (currentId,))
 
+        rows = cur.fetchall()
+
+        return render_template("deleteTask.html", rows=rows)
 
 
 @app.route('/updatetask', methods=['POST', 'GET'])
 def updatetask():
     global currentId
-    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
-        try:
-            cur = con.cursor(dictionary=True)
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                             password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor(dictionary=True)
 
-            cur.execute("SELECT Name FROM Tasks WHERE User_id=%s", (currentId,))
-            rows = cur.fetchall()
-            return render_template("updateTask.html", rows=rows)
-        except:
-            flash("You have to be a premium user to access this feature!")
-            return render_template('index.html', curUser=currentUser)
+        cur.execute("SELECT Tasks.Id, Tasks.Name FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                    "Assignments.Tasks_Id=Tasks.Id", (currentId,))
+
+        rows = cur.fetchall()
+
+        return render_template("updateTask.html", rows=rows)
 
 
 @app.route('/updatingtask', methods=['POST', 'GET'])
 def updatingtsk():
     if request.method == 'POST':
-            # noinspection PyUnresolvedReferences
-        nm = request.form.get('Name')
+        # noinspection PyUnresolvedReferences
+        id = request.form.get('Id')
+        print(id)
 
-        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                                 password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor()
-            
+
             try:
-                cur.execute("DELETE FROM Tasks WHERE Name = %s", (nm,))
+                cur.execute("DELETE FROM Tasks WHERE Tasks.Id=%s", (id,))
+                con.commit()
+                cur.execute("DELETE FROM Assignments WHERE Assignments.Tasks_Id=%s", (id,))
                 con.commit()
 
-            except:
+            except msc.Error as err:
+                print("Error Code:", err.errno)
+                print("SQLSTATE:", err.sqlstate)
+                print("Message:", err.msg)
                 con.rollback()
 
             finally:
@@ -293,22 +327,73 @@ def updatingtsk():
 def deletingtsk():
     global currentUser
     if request.method == 'POST':
-    
-        nm = request.form.getlist('Name')
 
-        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+        id = request.form.get('Id')
+        print(id)
+
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                                 password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor()
 
             try:
-                for taskName in nm:
-                    cur.execute("DELETE FROM Tasks WHERE Name = %s", (taskName,))
+                cur.execute("DELETE FROM Assignments WHERE Tasks_Id=%s", (id,))
+                con.commit()
+                cur.execute("DELETE FROM Tasks WHERE Id=%s", (id,))
                 con.commit()
 
-            except:
+            except msc.Error as err:
+                print("Error Code:", err.errno)
+                print("SQLSTATE:", err.sqlstate)
+                print("Message:", err.msg)
                 con.rollback()
 
             finally:
-                return render_template('index.html', curUser = currentUser)
+                return render_template('index.html', curUser=currentUser)
+
+
+@app.route('/categories', methods=['POST', 'GET'])
+def categories():
+    if request.method == 'POST':
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                                 password="masterpassword", database='TaskTracker')) as con:
+            cur = con.cursor(dictionary=True)
+            try:
+                if request.form['Action'] == 'Add':
+                    cur.execute("INSERT INTO Categories(Name) VALUES(%s)", (request.form['Name'],))
+                elif request.form['Action'] == 'Delete':
+                    cur.execute("DELETE FROM Categories WHERE Id = %s", (request.form['Id'],))
+                elif request.form['Action'] == 'Update':
+                    cur.execute("UPDATE Categories SET Name = %s WHERE Id = %s",
+                                (request.form['Name'], request.form['Id']))
+                con.commit()
+            except msc.Error as err:
+                print("Error Code:", err.errno)
+                print("SQLSTATE:", err.sqlstate)
+                print("Message:", err.msg)
+                con.rollback()
+
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                             password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute("SELECT * FROM Categories")
+        rows = cur.fetchall()
+        return render_template('categories.html', rows=rows)
+
+
+@app.route('/alltables', methods=['POST', 'GET'])
+def allTables():
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                             password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute("SELECT * FROM Assignments")
+        assi = cur.fetchall()
+        cur.execute("SELECT * FROM Categories")
+        cats = cur.fetchall()
+        cur.execute("SELECT * FROM Tasks")
+        tsks = cur.fetchall()
+        cur.execute("SELECT * FROM Users")
+        usrs = cur.fetchall()
+        return render_template('allTables.html', assignments=assi, categories=cats, tasks=tsks, users=usrs)
 
 
 if __name__ == '__main__':

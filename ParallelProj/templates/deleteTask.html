@@ -3,17 +3,18 @@
 <!doctype html>
 <h1> Select a Task to Delete </h1>
       <form action="{{ url_for('deletingtsk') }}" method="POST">
-         {% for row in rows %}
-            <div>
-                <input type="checkbox" name="Name" value="{{ row['Name'] }}">
-                <label>{{ row['Name'] }}</label>
-            </div>
-         {% endfor %}
-         <br>
-         <input type="submit" value="Submit">
-      </form>
-
-      <a href="/home">Back to home</a>
-
-   </body>
+            <table>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row["Id"] }}:</td>
+                    <td>{{ row["Name"] }}</td>
+                    <td><input type="radio" name="Id" value="{{ row['Id'] }}"></td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+        <h2><a href="/home">Back to home</a></h2>
+    </body>
 </html>
