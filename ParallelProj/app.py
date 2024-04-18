@@ -337,10 +337,10 @@ def deletingtsk():
             cur = con.cursor()
 
             try:
+                cur.execute("DELETE FROM Assignments WHERE Tasks_Id=%s", (id,))
+                con.commit()
                 cur.execute("DELETE FROM Tasks WHERE Id=%s", (id,))
                 con.commit()
-                # cur.execute("DELETE FROM Assignments WHERE Tasks_Id=%s", (id,))
-                # con.commit()
 
             except mysql.connector.Error as err:
                 print("Error Code:", err.errno)
