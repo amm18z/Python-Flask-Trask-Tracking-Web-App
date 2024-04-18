@@ -120,7 +120,12 @@ def home():
 
 @app.route('/newtask')
 def new_task():
-    return render_template('addTask.html')
+    rows = []
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute("SELECT * FROM Categories")
+        rows = cur.fetchall()
+    return render_template('addTask.html', cats=rows)
 
 
 @app.route('/addtask', methods=['POST', 'GET'])
@@ -133,14 +138,15 @@ def addtask():
         dscp = request.form['Description']
         dd = request.form['DueDate']
         pr = request.form['Priority']
+        cid = request.form['CategoryID']
 
         with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker')) as con:
 
             try:
-                cur = con.cursor()
+                cur = con.cursor(dictionary=True)
 
-                cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority,User_id) VALUES (%s,%s,%s,%s,%s,%s)",
-                            (nm, dscp, date.today(), dd, pr, currentId))
+                cur.execute("INSERT INTO Tasks (Name,Description,CreationDate,DueDate,Priority,Categories_Id) VALUES (%s,%s,%s,%s,%s,%s)",
+                            (nm, dscp, date.today(), dd, pr, cid))
 
                 con.commit()
 
@@ -149,6 +155,8 @@ def addtask():
 
             finally:
                 #con.close()    # realized that con.close() is unneccesary if connect() is preceded by the 'with' keyword. ( close() is automatically called upon exiting with block )
+                cur.execute("SELECT * FROM Categories")
+                rows = cur.fetchall()
                 return render_template('index.html', curUser = currentUser)
 
 @app.route('/listtask/<order>/<sort>', methods=['GET'])
