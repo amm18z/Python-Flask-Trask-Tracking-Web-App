@@ -1,6 +1,11 @@
 <!--2/21/2024 The program in this file is the individual work of Rafael Cardoso RDC21C-->
 
+<!doctype html>
 <html>
+	<style>
+	html {font-family: monospace;
+		  font-size: 125%}
+	</style>
     <body>
         <h1> Select a Task to Update </h1>
         <form action="{{ url_for('updateTaskForm') }}" method="POST">
@@ -14,7 +19,7 @@
                 {% endfor %}
             </table>
             <br>
-            <input type="submit" value="Submit">
+            <input type="submit" value="Submit" style="font-family:monospace;" >
         </form>
         <h2><a href="/home">Back to home</a></h2>
     </body>

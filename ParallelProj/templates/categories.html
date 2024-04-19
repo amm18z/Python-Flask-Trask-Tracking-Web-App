@@ -1,6 +1,10 @@
 <!--4/18/2024 The program in this file is the individual work of Judas Smith jms21bi-->
 
 <html>
+	<style>
+	html {font-family: monospace;
+		  font-size: 125%}
+	</style>
     <p>Categories Page</p>
     <h2>Current Categories:</h2>
     {% for row in rows %}
@@ -10,25 +14,25 @@
     {% endfor %}
 
     <h2>Add a category:</h2>
-    <form action = "{{ url_for('categories') }}" method="POST">
-        <input type="hidden" name="Action" value="Add">
-        <input type="text" name="Name" value="Enter Name">
-        <input type="submit" value="Submit">
+    <form action = "{{ url_for('categories') }}" method="POST" style="font-family:monospace;">
+        <input type="hidden" name="Action" value="Add" style="font-family:monospace;">
+        <input type="text" name="Name" value="Enter Name" style="font-family:monospace;">
+        <input type="submit" value="Submit" style="font-family:monospace;">
     </form>
 
     <h2>Delete a category:</h2>
-    <form action = "{{ url_for('categories') }}" method="POST">
-        <input type="hidden" name="Action" value="Delete">
-        <input type="text" name="Id" value="Enter Id">
-        <input type="submit" value="Submit">
+    <form action = "{{ url_for('categories') }}" method="POST" style="font-family:monospace;">
+        <input type="hidden" name="Action" value="Delete" style="font-family:monospace;">
+        <input type="text" name="Id" value="Enter Id" style="font-family:monospace;">
+        <input type="submit" value="Submit" style="font-family:monospace;">
     </form>
 
     <h2>Update a category:</h2>
-    <form action = "{{ url_for('categories') }}" method="POST">
-        <input type="hidden" name="Action" value="Update">
-        <input type="text" name="Id" value="Enter Id">
-        <input type="text" name="Name" value="Enter New Name">
-        <input type="submit" value="Submit">
+    <form action = "{{ url_for('categories') }}" method="POST" style="font-family:monospace;">
+        <input type="hidden" name="Action" value="Update" style="font-family:monospace;">
+        <input type="text" name="Id" value="Enter Id" style="font-family:monospace;">
+        <input type="text" name="Name" value="Enter New Name" style="font-family:monospace;">
+        <input type="submit" value="Submit" style="font-family:monospace;">
     </form>
 
     <a href="/home">Back to home</a>
