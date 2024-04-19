@@ -29,7 +29,7 @@ def loginForm():
     global currentUser #must explicitly use global keyword if using the global variable 'currentUser' in a function
 
     if request.method == 'POST':
-        
+
         uname = request.form['Username']
         pword = request.form['Password']
 
@@ -54,7 +54,7 @@ def loginForm():
                     return render_template('index.html', curUser = currentUser)
                 else:
                     flash("Login failed.")
-                    return render_template('login.html')         
+                    return render_template('login.html')
 
 
 
@@ -65,7 +65,7 @@ def createAccountPage():
 @app.route('/createAccountForm', methods =['POST', 'GET'])
 def createAccountForm():
     if request.method == 'POST':
-        
+
         uname = request.form['Username']
         pword = request.form['Password']
 
@@ -77,16 +77,16 @@ def createAccountForm():
         # mysql user = one that can receieve roles and permissions via mysql commands
         # username must be the same for both
 
-        
 
-    
+
+
         with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
             cur = con.cursor()
 
             try:
                 salt = os.urandom(16).hex()   # 16 bytes = 128 bits (not sure if database is getting/storing salts correctly: must check on this) converted to hex because mySQL can't handle urandom bytes object
                 pwordHash = hashlib.sha256(salt.encode() + pword.encode()).hexdigest()   # salt plus utf-8 encoded password hashed and converted to hexadecimal
-                
+
                 cur.execute("INSERT INTO Users (UserName, PasswordHash, Salt) VALUES (%s, %s, %s)", (uname, pwordHash, salt))
                 con.commit()
 
@@ -121,14 +121,14 @@ def new_task():
 def addtsk():
     global currentUser
     if request.method == 'POST':
-        
+
         nm = request.form['Name']
         dscp = request.form['Description']
         dd = request.form['DueDate']
         pr = request.form['Priority']
-        
+
         with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin", password="masterpassword", database='TaskTracker') as con:
-                
+
             try:
                 cur = con.cursor()
 
@@ -150,7 +150,7 @@ def listtask():
     if request.method == 'GET':
         with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
             cur = con.cursor(dictionary=True)
-            
+
             cur.execute("SELECT Name, DueDate, Description, Priority FROM Tasks")
 
             rows = cur.fetchall()
@@ -192,7 +192,7 @@ def updatingtsk():
 
         with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
             cur = con.cursor()
-            
+
             try:
                 cur.execute("DELETE FROM Tasks WHERE Name = %s", (nm,))
                 con.commit()
@@ -208,7 +208,7 @@ def updatingtsk():
 def deletingtsk():
     global currentUser
     if request.method == 'POST':\
-    
+
         nm = request.form.getlist('Name')
 
         with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com",port="3306",user="admin",password="masterpassword", database='TaskTracker') as con:
@@ -224,6 +224,10 @@ def deletingtsk():
 
             finally:
                 return render_template('index.html', curUser = currentUser)
+
+@app.route('/calendar')
+def calendar():
+    return render_template('calendar.html')
 
 
 if __name__ == '__main__':
