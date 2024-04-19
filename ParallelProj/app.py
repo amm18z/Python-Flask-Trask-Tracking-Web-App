@@ -58,6 +58,12 @@ def loginForm():
             else:
                 if (tempPHash == hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest()):
                     currentUser = uname
+                    con.close()
+
+                    with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user=currentUser) as con:
+                        cur = con.cursor()
+                        cur.execute("SET ROLE ALL") # this should make it so that user's roles are actually active, and they'll actually have permissions
+
                     # after this, database connection should be using current user, not admin user
                     return render_template('index.html', curUser=currentUser)
                 else:
@@ -267,7 +273,8 @@ def listtask(order, sort):
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Id DESC", (currentId,))
             rows = cur.fetchall()
-
+            for i in rows:
+                i['DueDateISO'] = i['DueDate'].strftime("%Y%m%dT%H%M%S")
             return render_template("listTasks.html", rows=rows)
 
     else:

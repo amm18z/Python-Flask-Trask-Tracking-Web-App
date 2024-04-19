@@ -30,6 +30,7 @@
             <td>Due Date</td>
             <td>Priority</td>
             <td>Category</td>
+            <td>Add To Google Calendar</td>
          </thead>
          
          {% for row in rows %}
@@ -40,7 +41,11 @@
                <td>{{row["CreationDate"]}}</td>
                <td>{{row["DueDate"]}}</td>	
                <td>{{row["Priority"]}}</td>	
-               <td>{{row["Category"]}}</td>	
+               <td>{{row["Category"]}}</td>		
+               <td><a href="https://calendar.google.com/calendar/r/eventedit?text={{row['Name']}}
+			   &dates={{row['DueDateISO']}}/{{row['DueDateISO']}}
+			   &details={{row['Description']}}">Add To Google Calendar
+			   </td>	
             </tr>
          {% endfor %}
       </table>
