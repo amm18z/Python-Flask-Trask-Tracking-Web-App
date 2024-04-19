@@ -8,8 +8,17 @@
 
          <br>Name:<input type ="text" name = "Name" />
             <br>Description:<input type ="text" name = "Description" />
-            <br>Due Date:<input type ="date" name = "DueDate" />
-            <br>Priority:<input type ="number" name = "Priority" />
+            <br>Due Date:<input type ="datetime-local" name = "DueDate" />
+            <br>Priority:<select name= "Priority" >
+				<option value=3 SELECTED>3: High Priority</option>
+				<option value=2 SELECTED>2: Medium Priority</option>
+				<option value=1 SELECTED>1: Low Priority</option>
+			</select>
+            <br>Category:<select name= "CategoryID" >
+            {% for row in cats %}
+				<option value= "{{row.Id}}" SELECTED>{{row.Id}}: {{row.Name}}</option>
+            {% endfor %}
+			</select>
          <br><input type = "submit" value = "Submit" /><br>
 
          <h2><a href = /home > Back to home</a></h2>

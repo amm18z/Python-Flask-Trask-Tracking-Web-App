@@ -313,8 +313,13 @@ def updateTaskForm():
     global currentId
 
     session['updateTakeId'] = request.form.get('Id')
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                             password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute("SELECT * FROM Categories")
+        rows = cur.fetchall()
     
-    return render_template("updatingTask.html")
+    return render_template("updatingTask.html", cats=rows)
 
 
 @app.route('/updatingTaskPage', methods=['POST', 'GET'])
@@ -330,6 +335,7 @@ def updatingTaskForm():
         dsc = request.form.get('Description')
         ddt = request.form.get('DueDate')
         pr = request.form.get('Priority')
+        cid = request.form['CategoryID']
         id = session['updateTakeId']
         print(id)
 
@@ -339,7 +345,7 @@ def updatingTaskForm():
 
             
             try:
-                cur.execute("UPDATE Tasks SET Name = %s, Description = %s, DueDate = %s, Priority = %s WHERE Id=%s", (nm, dsc, ddt, pr, id,))
+                cur.execute("UPDATE Tasks SET Name = %s, Description = %s, DueDate = %s, Priority = %s, Categories_Id = %s WHERE Id=%s", (nm, dsc, ddt, pr, cid, id,))
 
             except msc.Error as err:
                 print("Error Code:", err.errno)
