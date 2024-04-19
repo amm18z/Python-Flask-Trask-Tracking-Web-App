@@ -204,70 +204,86 @@ def listtask(order, sort):
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Id ASC", (currentId,))
+                    rows = cur.fetchall()
                 elif sort == "name":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Name ASC", (currentId,))
+                    rows = cur.fetchall()
                 elif sort == "descr":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Description ASC", (currentId,))
+                    rows = cur.fetchall()
                 elif sort == "creation_date":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.CreationDate ASC", (currentId,))
+                    rows = cur.fetchall()
                 elif sort == "due_date":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.DueDate ASC", (currentId,))
+                    rows = cur.fetchall()
                 elif sort == "priority":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Priority ASC", (currentId,))
+                    rows = cur.fetchall()
                 elif sort == "cat":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Category ASC", (currentId,))
+                    rows = cur.fetchall()
                 else:
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Id ASC", (currentId,))
+                    rows = cur.fetchall()
 
             elif order == "d":
                 if sort == "id":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Id DESC", (currentId,))
+                    rows = cur.fetchall()
                 elif sort == "name":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Name DESC", (currentId,))
+                    rows = cur.fetchall()
                 elif sort == "descr":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Description DESC", (currentId,))
+                    rows = cur.fetchall()
                 elif sort == "creation_date":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.CreationDate DESC", (currentId,))
+                    rows = cur.fetchall()
                 elif sort == "due_date":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.DueDate DESC", (currentId,))
+                    rows = cur.fetchall()
                 elif sort == "priority":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Priority DESC", (currentId,))
+                    rows = cur.fetchall()
                 elif sort == "cat":
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Category DESC", (currentId,))
+                    rows = cur.fetchall()
                 else:
                     cur.execute("SELECT Tasks.Id, Tasks.Name, Tasks.Description, Tasks.CreationDate, Tasks.DueDate, "
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Id DESC", (currentId,))
-            rows = cur.fetchall()
-
+                    rows = cur.fetchall()
+            for i in rows:
+                i['DueDateISO'] = i['DueDate'].strftime("%Y%m%dT%H%M%S")
             return render_template("listTasks.html", rows=rows)
 
     else:
