@@ -273,7 +273,8 @@ def listtask(order, sort):
                                 "Tasks.Priority, Categories.Name AS Category FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
                                 "Assignments.Tasks_Id=Tasks.Id CROSS JOIN Categories ON Tasks.Categories_Id=Categories.Id ORDER BY Tasks.Id DESC", (currentId,))
             rows = cur.fetchall()
-
+            for i in rows:
+                i['DueDateISO'] = i['DueDate'].strftime("%Y%m%dT%H%M%S")
             return render_template("listTasks.html", rows=rows)
 
     else:
