@@ -1,25 +1,29 @@
 <!DOCTYPE html>
 <html>
+	<style>
+	html {font-family: monospace;
+		  font-size: 125%}
+	</style>
     <body>
         <h1> Update Task </h1>
         <form action = "{{ url_for('updatingTaskForm') }}" method = "POST">
 
          <h2> Task Information </h2>
 
-         <br>Name:<input type ="text" name = "Name" />
+         <br>Name:&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;<input type ="text" name = "Name" />
             <br>Description:<input type ="text" name = "Description" />
-            <br>Due Date:<input type ="datetime-local" name = "DueDate" />
-            <br>Priority:<select name= "Priority" >
+            <br>Due Date:&ensp;&ensp;&ensp;<input type ="datetime-local" name = "DueDate" />
+            <br>Priority:&ensp;&ensp;&ensp;<select name= "Priority" style="font-family:monospace;">
 				<option value=3 SELECTED>3: High Priority</option>
 				<option value=2 SELECTED>2: Medium Priority</option>
 				<option value=1 SELECTED>1: Low Priority</option>
 			</select>
-            <br>Category:<select name= "CategoryID" >
+            <br>Category:&ensp;&ensp;&ensp;<select name= "CategoryID" style="font-family:monospace;">
             {% for row in cats %}
 				<option value= "{{row.Id}}" SELECTED>{{row.Id}}: {{row.Name}}</option>
             {% endfor %}
 			</select>
-         <br><input type = "submit" value = "Submit" /><br>
+         <br><input type = "submit" value = "Submit" style="font-family:monospace;"/><br>
 
          <h2><a href = /home > Back to home</a></h2>
       </form>
