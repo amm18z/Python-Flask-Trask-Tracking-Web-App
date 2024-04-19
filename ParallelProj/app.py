@@ -60,11 +60,11 @@ def loginForm():
             else:
                 if (tempPHash == hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest()):
                     currentUser = uname
-                    #con.close()
+                    con.close()
 
-                    #with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user=currentUser)) as con:
-                        #cur = con.cursor()
-                        #cur.execute("GRANT ALL ON TaskTracker TO ALL") # this should make it so that user's roles are actually active, and they'll actually have permissions
+                    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user=currentUser)) as con:
+                        cur = con.cursor()
+                        cur.execute("SET ROLE ALL") # this should make it so that user's roles are actually active, and they'll actually have permissions
 
                     # after this, database connection should be using current user, not admin user
                     return render_template('index.html', curUser=currentUser)
@@ -116,8 +116,8 @@ def createAccountForm():
                 return render_template('createAccount.html')
 
             else:
-                # cur.execute("CREATE USER %s", (uname,))        # currently causes exception if MySQL user already exists, should use another try...except...else to handle this error
-                # cur.execute("GRANT FreeUserRole TO %s", (uname,))      # currently admin user can't grant roles or privileges to users for some reason, given error: mysql.connector.errors.ProgrammingError: 1227 (42000): Access denied; you need (at least one of) the WITH ADMIN, ROLE_ADMIN, SUPER privilege(s) for this operation
+                cur.execute("CREATE USER %s", (uname,))        # currently causes exception if MySQL user already exists, should use another try...except...else to handle this error
+                cur.execute("GRANT FreeUserRole TO %s", (uname,))      # currently admin user can't grant roles or privileges to users for some reason, given error: mysql.connector.errors.ProgrammingError: 1227 (42000): Access denied; you need (at least one of) the WITH ADMIN, ROLE_ADMIN, SUPER privilege(s) for this operation
                 con.commit()
                 flash('Account ' + uname + ' created sucessfully.')
                 return render_template('login.html')
@@ -168,8 +168,7 @@ def addtask():
         dd = request.form['DueDate']
         pr = request.form['Priority']
         cid = request.form['CategoryID']
-        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
-                                 password="masterpassword", database='TaskTracker')) as con:
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user=currentUser, database='TaskTracker')) as con:
 
             try:
                 current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
@@ -204,8 +203,7 @@ def addtask():
 def listtask(order, sort):
     global currentId
     if request.method == 'GET':
-        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
-                                 password="masterpassword", database='TaskTracker')) as con:
+        with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user=currentUser, database='TaskTracker')) as con:
             cur = con.cursor(dictionary=True)
             if order == "a":
                 if sort == "id":
