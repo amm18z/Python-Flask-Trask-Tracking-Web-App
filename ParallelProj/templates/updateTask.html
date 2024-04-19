@@ -3,7 +3,7 @@
 <html>
     <body>
         <h1> Select a Task to Update </h1>
-        <form action="{{ url_for('updatingtsk') }}" method="POST">
+        <form action="{{ url_for('updateTaskForm') }}" method="POST">
             <table>
                 {% for row in rows %}
                 <tr>

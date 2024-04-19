@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import Flask, render_template, request, flash
+from flask import Flask, render_template, request, flash, session
 import mysql.connector as msc
 from contextlib import closing
 import hashlib
@@ -281,37 +281,57 @@ def deletetask():
         return render_template("deleteTask.html", rows=rows)
 
 
-@app.route('/updatetask', methods=['POST', 'GET'])
-def updatetask():
+@app.route('/updateTaskPage', methods=['POST', 'GET'])
+def updateTaskPage():
     global currentId
     with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
                              password="masterpassword", database='TaskTracker')) as con:
         cur = con.cursor(dictionary=True)
 
-        cur.execute("SELECT Tasks.Id, Tasks.Name FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
-                    "Assignments.Tasks_Id=Tasks.Id", (currentId,))
+        try:
+            cur.execute("SELECT Tasks.Id, Tasks.Name FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                        "Assignments.Tasks_Id=Tasks.Id", (currentId,))
 
-        rows = cur.fetchall()
+        except:
+            con.rollback()
 
-        return render_template("updateTask.html", rows=rows)
+        else:
+            rows = cur.fetchall()
+
+    return render_template("updateTask.html", rows=rows)
+    
+@app.route('/updateTaskForm', methods=['POST', 'GET'])
+def updateTaskForm():
+    global currentId
+
+    session['updateTakeId'] = request.form.get('Id')
+    
+    return render_template("updatingTask.html")
 
 
-@app.route('/updatingtask', methods=['POST', 'GET'])
-def updatingtsk():
+@app.route('/updatingTaskPage', methods=['POST', 'GET'])
+def updatingTaskPage():
+    return render_template('updatingTask.html')
+            
+@app.route('/updatingTaskForm', methods=['POST', 'GET'])
+def updatingTaskForm():
+    global currentId
     if request.method == 'POST':
         # noinspection PyUnresolvedReferences
-        id = request.form.get('Id')
+        nm = request.form.get('Name')
+        dsc = request.form.get('Description')
+        ddt = request.form.get('DueDate')
+        pr = request.form.get('Priority')
+        id = session['updateTakeId']
         print(id)
 
         with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
                                  password="masterpassword", database='TaskTracker')) as con:
-            cur = con.cursor()
+            cur = con.cursor(dictionary=True)
 
+            
             try:
-                cur.execute("DELETE FROM Tasks WHERE Tasks.Id=%s", (id,))
-                con.commit()
-                cur.execute("DELETE FROM Assignments WHERE Assignments.Tasks_Id=%s", (id,))
-                con.commit()
+                cur.execute("UPDATE Tasks SET Name = %s, Description = %s, DueDate = %s, Priority = %s WHERE Id=%s", (nm, dsc, ddt, pr, id,))
 
             except mysql.connector.Error as err:
                 print("Error Code:", err.errno)
@@ -319,8 +339,14 @@ def updatingtsk():
                 print("Message:", err.msg)
                 con.rollback()
 
+            else:
+                con.commit()
+
             finally:
-                return render_template('updateThisTask.html')
+                cur.execute("SELECT Tasks.Id, Tasks.Name FROM Tasks CROSS JOIN Assignments ON Assignments.Users_Id=%s AND "
+                        "Assignments.Tasks_Id=Tasks.Id", (currentId,))
+                rows = cur.fetchall()
+                return render_template('updateTask.html', rows=rows)
 
 
 @app.route('/deletingtask', methods=['POST', 'GET'])
