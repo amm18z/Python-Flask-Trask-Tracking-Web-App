@@ -1,0 +1,40 @@
+<!--4/18/2024 The program in this file is the individual work of Judas Smith jms21bi-->
+
+<html>
+    <h2>Assignments:</h2>
+    {% for row in assignments %}
+    <div>
+        <label>TaskID:{{ row['Tasks_Id']}} UserID:{{ row['Users_Id']}}</label>
+    </div>
+    {% endfor %}
+
+    <h2>Categories:</h2>
+    {% for row in categories %}
+    <div>
+        <label>ID:{{ row['Id']}} Name:{{ row['Name']}}</label>
+    </div>
+    {% endfor %}
+
+    <h2>Tasks:</h2>
+    {% for row in tasks %}
+    <div>
+        <label>ID:{{ row['Id']}} Name:{{ row['Name']}}</label>
+        <br><label>Description:{{ row['Description']}}</label>
+        <br><label>CreationDate:{{ row['CreationDate']}} DueDate:{{ row['DueDate']}}</label>
+        <br><label>Priority:{{ row['Priority']}} Categories_Id:{{ row['Categories_Id']}}</label>
+        <br>---
+    </div>
+    {% endfor %}
+
+    <h2>Users:</h2>
+    {% for row in users %}
+    <div>
+        <label>ID:{{ row['Id']}} Name:{{ row['UserName']}}</label>
+        <br><label>PasswordHash:{{ row['PasswordHash']}}</label>
+        <br><label>Salt:{{ row['Salt']}}</label>
+        <br>---
+    </div>
+    {% endfor %}
+
+    <a href="/home">Back to home</a>
+</html>

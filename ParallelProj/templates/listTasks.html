@@ -1,27 +1,56 @@
-<!--2/21/2024 The program in this file is the individual work of Rafael Cardoso RDC21C-->
+<!--2/21/2024 The program in this file is the individual work of Rafael Cardoso RDC21C, and Stefano Sanidas sas19t-->
 
 <html>
-    <body>
-        <h1> All Upcoming Tasks </h1>
-        <table border = 1>
+	<style>
+	html {font-family: monospace;
+		  font-size: 125%}
+	</style>
+   <body>
+	<h1> Your Upcoming Tasks </h1>
+	 <a href = "/listtask/a/id">&ensp;Ascending ID</a>
+	 <a href = "/listtask/a/name">&ensp;Ascending Name</a>
+	 <a href = "/listtask/a/descr">&ensp;Ascending Description</a>
+	 <a href = "/listtask/a/creation_date">&ensp;Ascending Date Made</a>
+	 <a href = "/listtask/a/due_date">&ensp;Ascending Due Date</a>
+	 <a href = "/listtask/a/priority">&ensp;Ascending Priority</a>
+	 <a href = "/listtask/a/cat">&ensp;Ascending Category</a></br>
+	 <a href = "/listtask/d/id">Descending ID</a>
+	 <a href = "/listtask/d/name">Descending Name</a>
+	 <a href = "/listtask/d/descr">Descending Description</a>
+	 <a href = "/listtask/d/creation_date">Descending Date Made</a>
+	 <a href = "/listtask/d/due_date">Descending Due Date</a>
+	 <a href = "/listtask/d/priority">Descending Priority</a>
+	 <a href = "/listtask/d/cat">Descending Category</a></br>
+      <table border = 1>
          <thead>
-            <td>Task</td>
-            <td>Due Date</td>
+            <td>ID</td>
+            <td>Name</td>
             <td>Description</td>
+            <td>Date Made</td>
+            <td>Due Date</td>
             <td>Priority</td>
+            <td>Category</td>
+            <td>Add To Google Calendar</td>
          </thead>
-
+         
          {% for row in rows %}
             <tr>
+               <td>{{row["Id"]}}</td>
                <td>{{row["Name"]}}</td>
-               <td>{{row["DueDate"]}}</td>
-               <td> {{ row["Description"]}}</td>
-               <td>{{row["Priority"]}}</td>
+               <td>{{row["Description"]}}</td>
+               <td>{{row["CreationDate"]}}</td>
+               <td>{{row["DueDate"]}}</td>	
+               <td>{{row["Priority"]}}</td>	
+               <td>{{row["Category"]}}</td>		
+               <td><a href="https://calendar.google.com/calendar/r/eventedit?text={{row['Name']}}
+			   &dates={{row['DueDateISO']}}/{{row['DueDateISO']}}
+			   &details={{row['Description']}}">Add To Google Calendar
+			   </td>	
             </tr>
          {% endfor %}
       </table>
-
-      <a href = "/home">Back to home</a>
-
-    </body>
+      
+      <a href = /home >Go back to home page</a>
+      
+   </body>
 </html>

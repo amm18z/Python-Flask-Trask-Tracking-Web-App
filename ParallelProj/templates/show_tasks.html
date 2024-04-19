@@ -1,0 +1,45 @@
+<html>
+   <body>
+	<h1> Your Tasks </h1>
+	 <button type="button">Ascending ID</button>
+	 <button type="button">Ascending Name</button> 
+	 <button type="button">Ascending Description</button> 
+	 <button type="button">Ascending Date Made</button> 
+	 <button type="button">Ascending Due Date</button> 
+	 <button type="button">Ascending Priority</button> 
+	 <button type="button">Ascending Category</button></br>
+	 <button type="button">Descending ID</button>
+	 <button type="button">Descending Name</button> 
+	 <button type="button">Descending Description</button> 
+	 <button type="button">Descending Date Made</button> 
+	 <button type="button">Descending Due Date</button> 
+	 <button type="button">Descending Priority</button> 
+	 <button type="button">Descending Category</button></br>
+      <table border = 1>
+         <thead>
+            <td>ID</td>
+            <td>Name</td>
+            <td>Description</td>
+            <td>Date Made</td>
+            <td>Due Date</td>
+            <td>Priority</td>
+            <td>Category</td>
+         </thead>
+         
+         {% for row in rows %}
+            <tr>
+               <td>{{row["id"]}}</td>
+               <td>{{row["name"]}}</td>
+               <td>{{row["descr"]}}</td>
+               <td>{{row["creation_date"]}}</td>
+               <td>{{row["due_date"]}}</td>	
+               <td>{{row["priority"]}}</td>	
+               <td>{{row["category"]}}</td>	
+            </tr>
+         {% endfor %}
+      </table>
+      
+      <a href = "/">Go back to home page</a>
+      
+   </body>
+</html>

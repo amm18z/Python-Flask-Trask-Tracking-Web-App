@@ -1,4 +1,5 @@
-"""3/27/2024 The program in this file is the work of Aidan McGill, Judas McCall Smith, and Rafael Cardoso"""
+# 4/18/2024 The program in this file is the individual work of Rafael Cardoso RDC21C, Aidan McGill amm18z,
+# Judas Smith jms21bi, and Stefano Sanidas sas19t
 
 import mysql.connector as msc
 
