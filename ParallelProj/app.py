@@ -316,7 +316,7 @@ def updateTaskPage():
             rows = cur.fetchall()
 
     return render_template("updateTask.html", rows=rows)
-    
+
 @app.route('/updateTaskForm', methods=['POST', 'GET'])
 def updateTaskForm():
     global currentId
@@ -327,14 +327,14 @@ def updateTaskForm():
         cur = con.cursor(dictionary=True)
         cur.execute("SELECT * FROM Categories")
         rows = cur.fetchall()
-    
+
     return render_template("updatingTask.html", cats=rows)
 
 
 @app.route('/updatingTaskPage', methods=['POST', 'GET'])
 def updatingTaskPage():
     return render_template('updatingTask.html')
-            
+
 @app.route('/updatingTaskForm', methods=['POST', 'GET'])
 def updatingTaskForm():
     global currentId
@@ -352,7 +352,7 @@ def updatingTaskForm():
                                  password="masterpassword", database='TaskTracker')) as con:
             cur = con.cursor(dictionary=True)
 
-            
+
             try:
                 cur.execute("UPDATE Tasks SET Name = %s, Description = %s, DueDate = %s, Priority = %s, Categories_Id = %s WHERE Id=%s", (nm, dsc, ddt, pr, cid, id,))
 
@@ -444,6 +444,10 @@ def allTables():
         usrs = cur.fetchall()
         return render_template('allTables.html', assignments=assi, categories=cats, tasks=tsks, users=usrs)
 
+
+@app.route('/calendar')
+def calendar():
+    return render_template('calendar.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
