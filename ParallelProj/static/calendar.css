@@ -1,0 +1,50 @@
+body {
+    background-color: #2e2e2f;
+    color: #ececec;
+    width: vw;
+    height: vh;
+}
+#calendar {
+    height: 60vh;
+    padding: 0px 20px 0px 20px;
+}
+#days {
+    background-color: #252526;
+    text-align: center;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+}
+#month-selector {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #252526;
+}
+.changer {
+    cursor: pointer;
+}
+/* makes all the dates into a grid and customizes the collection of divs the script adds*/
+#dates {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(7, 1fr);
+    gap: 1px;
+}
+/* stylizes each div in the calender */
+#dates div {
+    padding: 20px;
+    background-color: #a1a1a1;
+    color: #252526;
+    text-align: center;
+}
+/*stylizes the current day*/
+#dates div.today {
+    background-color: #d91817;
+    color: #ececec;
+}
+#taskBox {
+    padding: 0px 20px 0px 20px;
+    height: 30vh;
+}

@@ -1,22 +1,24 @@
 <!--4/18/2024 The program in this file is the individual work of Rafael Cardoso RDC21C, Aidan McGill amm18z, Judas Smith jms21bi, and Stefano Sanidas sas19t-->
 
-<!DOCTYPE html>
+<!doctype html>
 <html>
-	<style>
-	html {font-family: monospace;
-		  font-size: 125%}
-	</style>
-   <p>Currently logged in as: {{curUser}}</p>
-   <body>
-      <h1> Welcome to TickTask </h1>
-      <h2><a href = "/newtask">Add New Task</a></h2>
-	  <h2><a href = "/listtask/a/id">View All Tasks for a Month</a></h2>
-	  <!--h2><a href = "/listtask/a/id">View Calendar</a></h2-->
-      <h2><a href = "/updateTaskPage">Update a Task </a></h2>
-      <h2><a href = "/deletetask">Delete a Task</a></h2>
-      <h2><a href = "/changepriv">Change Privileges</a></h2>
-      <h2><a href = "/categories">Manage Categories</a></h2>
-   </body>
-   <a href = '/alltables'>All Tables</a>
-   <a href = "/">Logout</a>
+    <style>
+        html {
+            font-family: monospace;
+            font-size: 125%;
+        }
+    </style>
+    <p>Currently logged in as: {{curUser}}</p>
+    <body>
+        <h1>Welcome to TickTask</h1>
+        <h2><a href="/newtask">Add New Task</a></h2>
+        <h2><a href="/listtask/a/id">View All Tasks for a Month</a></h2>
+        <h2><a href="/calendar">View Calendar</a></h2>
+        <h2><a href="/updateTaskPage">Update a Task </a></h2>
+        <h2><a href="/deletetask">Delete a Task</a></h2>
+        <h2><a href="/changepriv">Change Privileges</a></h2>
+        <h2><a href="/categories">Manage Categories</a></h2>
+    </body>
+    <a href="/alltables">All Tables</a>
+    <a href="/">Logout</a>
 </html>
