@@ -97,10 +97,13 @@ def createAccountForm():
                     16).hex()  # 16 bytes = 128 bits (not sure if database is getting/storing salts correctly: must check on this) converted to hex because mySQL can't handle urandom bytes object
                 pwordHash = hashlib.sha256(
                     salt.encode() + pword.encode()).hexdigest()  # salt plus utf-8 encoded password hashed and converted to hexadecimal
-
-                cur.execute("INSERT INTO Users (UserName, PasswordHash, Salt) VALUES (%s, %s, %s)",
+                if doesntExist(uname, pword):
+                    cur.execute("INSERT INTO Users (UserName, PasswordHash, Salt) VALUES (%s, %s, %s)",
                             (uname, pwordHash, salt))
-                con.commit()
+                    con.commit()
+                else:
+                    flash("Username already taken, try again!")
+                    return render_template('createAccount.html')
 
             except msc.Error as err:
                 # print("Error executing MySQL query:", err.msg)
@@ -138,6 +141,23 @@ def new_task():
     return render_template('addTask.html', cats=rows)
 
 
+def doesntExist(user, passwrd):
+    with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                     password="masterpassword", database='TaskTracker') as con:
+        cur = con.cursor()
+        cur.execute("SELECT PasswordHash, Salt FROM Users WHERE UserName = %s", (user,))
+        users = cur.fetchall()
+        if len(users) == 0:
+            return True
+        else:
+            for usr in users:
+                pswd = usr[0]
+                salt = usr[1]
+                if hashlib.sha256(salt.encode() + passwrd.encode()).hexdigest() == pswd:
+                    return False
+            return True
+
+
 @app.route('/changepriv')
 def change_priv():
     return (render_template('changePrivileges.html'))
@@ -145,12 +165,28 @@ def change_priv():
 
 @app.route('/becomefree')
 def become_free():
+    global currentUser
+    with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                     password="masterpassword", database='TaskTracker') as con:
+        cur = con.cursor()
+        cur.execute("REVOKE PremiumUserRole FROM %s", (currentUser,))
+        cur.execute("GRANT FreeUserRole TO %s", (currentUser,))
+        cur.execute("SET DEFAULT ROLE FreeUserRole TO %s@'%'", (currentUser,))
+        con.commit()
     flash('Changed user to a free user')
     return render_template('changePrivileges.html')
 
 
 @app.route('/becomepremium')
 def become_premium():
+    global currentUser
+    with msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                     password="masterpassword", database='TaskTracker') as con:
+        cur = con.cursor()
+        cur.execute("REVOKE FreeUserRole FROM %s", (currentUser,))
+        cur.execute("GRANT PremiumUserRole TO %s", (currentUser,))
+        cur.execute("SET DEFAULT ROLE PremiumUserRole TO %s@'%'", (currentUser,))
+        con.commit()
     flash('Changed user to a premium user')
     return render_template('changePrivileges.html')
 
