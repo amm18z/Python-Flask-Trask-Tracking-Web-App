@@ -8,3 +8,22 @@ A simple task tracker web application that allows users to perform CRUD operatio
 * contextlib: used because mysql.connector does not natively support context manager switching and the closing function of this library helps close the connection without issues
 * hashlib:
 * os:
+## Resources Used
+* https://dev.mysql.com/doc/
+* https://docs.python.org/3/library/contextlib.html
+## Features
+* Create, Read, Update, and Delete Tasks
+* Add a Task to Google Calendar
+* Create, Update, and Delete Categories of Tasks
+* Viewable Calendar
+## Division of Labor
+### Stefano Sanidas
+* Created the various HTML files used in the program, created the SQL Queries for the CRUD functionality, and created the Add Task to Google Calendar feature
+### Aidan McGill
+*
+### Judas McCall Smith
+*
+### Rafael Cardoso
+*
+### Preston Byk
+*
