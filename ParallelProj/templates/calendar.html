@@ -1,3 +1,4 @@
+<!--4/18/2024 The program in this file is the individual work of Preston Byk Hanako21-->
 <head>
     <link
         rel="stylesheet"
@@ -33,6 +34,12 @@
         <div id="dates"></div>
     </div>
 
-    <div id="taskBox"></div>
+    <table>
+        {% for task in tasks %}
+            <tr>
+                <td>{{ task }}</td>
+            </tr>
+        {% endfor %}
+    </table>
 </body>
 <script src="{{url_for('static', filename='calendar.js')}}"></script>

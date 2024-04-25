@@ -1,3 +1,4 @@
+// 4/18/2024 The program in this file is the individual work of Preston Byk Hanako21
 let date = new Date();
 let fullYear = date.getFullYear();
 

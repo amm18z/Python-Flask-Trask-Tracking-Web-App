@@ -1,3 +1,4 @@
+/* 4/18/2024 The program in this file is the individual work of Preston Byk Hanako21*/
 body {
     background-color: #2e2e2f;
     color: #ececec;
@@ -9,6 +10,12 @@ a:visited,
 a:hover,
 a:active {
     text-decoration: none;
+    color: #ffffff;
+}
+#month {
+    background-color: transparent;
+    pointer-events: none;
+    text-align: center;
     color: #ffffff;
 }
 #calendar {

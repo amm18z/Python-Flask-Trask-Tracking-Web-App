@@ -1,5 +1,5 @@
 # 4/18/2024 The program in this file is the individual work of Rafael Cardoso RDC21C, Aidan McGill amm18z,
-# Judas Smith jms21bi, and Stefano Sanidas sas19t
+# Judas Smith jms21bi, Stefano Sanidas sas19t, Preston Byk Hanako21
 from datetime import datetime
 
 from flask import Flask, render_template, request, flash, session
@@ -491,45 +491,35 @@ def calendar():
                     'July', 'August', 'September', 'October', 'November', 'December'
                 ]
                 if request.form.get("prev") == "<":   #previous month
-                    print("prev")
                     for i in range(0, 11):
-
-                        #print(str(request.form.get("currentMonth"))[:-5])
-                        #print(month_dict[i] == str(request.form.get("currentMonth"))[:-5])
                         if month_dict[i] == str(request.form.get("currentMonth"))[:-5]:
                             month = i - 1
-                            print(month)
                 elif request.form.get("next") == ">":   #next month
-                    print("next")
                     for i in range(0, 11):
-                        #print(str(request.form.get("currentMonth"))[:-5], "=?", month_dict[i])
-                        #print(month_dict[i] == str(request.form.get("currentMonth"))[:-5])
                         if month_dict[i] == str(request.form.get("currentMonth"))[:-5]:
                             month = i + 1
-                return render_template('calendar.html', month= month)
-            else:
-                month = datetime.now().month - 1
+                month = month
                 year = datetime.now().year
-                cur.execute("SELECT FROM Tasks WHERE (MONTH(DueDate) = {month}, YEAR(DueDate) = {year}) (%s,%s) ",
-                    (month, year))
-
-                print("testing")
+                cur.execute("SELECT Name, Description, DueDate FROM Tasks WHERE MONTH(DueDate) = %s AND YEAR(DueDate) = %s",
+                                    ( month, year))
                 # Fetch all the rows in a list of lists.
                 tasks = cur.fetchall()
-                for task in tasks:
-                    print("testing")
-                    print(task)
-                return render_template('calendar.html', month = month)
+                return render_template('calendar.html', month= month, tasks = tasks)
+            else:
+                month = datetime.now().month
+                year = datetime.now().year
+                cur.execute("SELECT Name, Description, DueDate FROM Tasks WHERE MONTH(DueDate) = %s AND YEAR(DueDate) = %s",
+                                    ( month, year))
+                # Fetch all the rows in a list of lists.
+                tasks = cur.fetchall()
+                return render_template('calendar.html', month = month, tasks = tasks)
 
         except msc.Error as err:
             print("Error Code:", err.errno)
             print("SQLSTATE:", err.sqlstate)
             print("Message:", err.msg)
             con.close()  # just to be safe, must explicitly close connection before rendering any other templates
-
-
-
-
+            return render_template('index.html', curUser=currentUser)
 
 
 
