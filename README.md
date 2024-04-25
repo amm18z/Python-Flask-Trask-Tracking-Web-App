@@ -22,7 +22,7 @@ A simple task tracker web application that allows users to perform CRUD operatio
 ### Aidan McGill
 *
 ### Judas McCall Smith
-*
+* Created and maintained the database via AWS, created the initial category.html page and backend, the debug page "alltables", and updated the database throughout to reflect changes. 
 ### Rafael Cardoso
 *
 ### Preston Byk
