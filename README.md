@@ -12,6 +12,10 @@ A simple task tracker web application that allows users to perform CRUD operatio
 ## Resources Used
 * https://dev.mysql.com/doc/
 * https://docs.python.org/3/library/contextlib.html
+## Software Used
+* PyCharm
+* MySQL Workbench
+* Notepad++
 ## Features
 * Create, Read, Update, and Delete Tasks
 * Add a Task to Google Calendar
