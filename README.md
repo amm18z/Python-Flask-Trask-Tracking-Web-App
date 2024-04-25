@@ -26,4 +26,4 @@ A simple task tracker web application that allows users to perform CRUD operatio
 ### Rafael Cardoso
 * Created the overall CRUD structure for the application, established Role Based Access Control functionality for switching between roles and lightly assisted with the implementation of User Authentication. 
 ### Preston Byk
-*
+* Created the view Calendar feature
