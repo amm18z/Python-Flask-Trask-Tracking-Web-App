@@ -20,7 +20,7 @@ A simple task tracker web application that allows users to perform CRUD operatio
 ### Stefano Sanidas
 * Created the various HTML files used in the program, created the SQL Queries for the CRUD functionality, and created the Add Task to Google Calendar feature
 ### Aidan McGill
-*
+* Implemented User Authentication (pasword salting and hashing - login and createAccount html templates + relevant routing and logic code), worked on Role Based Access Control, and implemented Updating for tasks (U in CRUD).
 ### Judas McCall Smith
 * Created and maintained the database via AWS, created the initial category.html page and backend, the debug page "alltables", and updated the database throughout to reflect changes. 
 ### Rafael Cardoso
