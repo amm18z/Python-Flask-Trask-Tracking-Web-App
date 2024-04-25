@@ -521,8 +521,10 @@ def calendar():
                     print(task)
                 return render_template('calendar.html', month = month)
 
-        except:
-            flash("no tasks fetched")
+        except msc.Error as err:
+            print("Error Code:", err.errno)
+            print("SQLSTATE:", err.sqlstate)
+            print("Message:", err.msg)
             con.close()  # just to be safe, must explicitly close connection before rendering any other templates
 
 
