@@ -8,11 +8,27 @@
 </head>
 <body>
     <div id="calendar">
-        <div id="month-selector">
-            <span id="prev" class="changer"><</span>
-            <h1 id="month"></h1>
-            <span id="next" class="changer">></span>
-        </div>
+        <form
+            action="{{ url_for('calendar') }}"
+            id="month-selector"
+            method="POST"
+        >
+            <input
+                type="submit"
+                id="prev"
+                name="prev"
+                class="changer"
+                value="<"
+            />
+            <input id="month" name="currentMonth" value="{{month}}"> </input>
+            <input
+                type="submit"
+                id="next"
+                name="next"
+                class="changer"
+                value=">"
+            />
+        </form>
         <div id="days"></div>
         <div id="dates"></div>
     </div>

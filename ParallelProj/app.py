@@ -60,7 +60,7 @@ def loginForm():
             else:
                 if (tempPHash == hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest()):
                     currentUser = uname
-                    
+
                     # after this, database connection should be using current user, not admin user
                     return render_template('index.html', curUser=currentUser)
                 else:
@@ -476,9 +476,64 @@ def allTables():
         return render_template('allTables.html', assignments=assi, categories=cats, tasks=tsks, users=usrs)
 
 
-@app.route('/calendar')
+@app.route('/calendar', methods=['POST', 'GET'])
 def calendar():
-    return render_template('calendar.html')
+
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                             password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor()
+
+        try:
+            month = -1
+            if request.method == "POST":
+                month_dict = [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ]
+                if request.form.get("prev") == "<":   #previous month
+                    print("prev")
+                    for i in range(0, 11):
+
+                        #print(str(request.form.get("currentMonth"))[:-5])
+                        #print(month_dict[i] == str(request.form.get("currentMonth"))[:-5])
+                        if month_dict[i] == str(request.form.get("currentMonth"))[:-5]:
+                            month = i - 1
+                            print(month)
+                elif request.form.get("next") == ">":   #next month
+                    print("next")
+                    for i in range(0, 11):
+                        #print(str(request.form.get("currentMonth"))[:-5], "=?", month_dict[i])
+                        #print(month_dict[i] == str(request.form.get("currentMonth"))[:-5])
+                        if month_dict[i] == str(request.form.get("currentMonth"))[:-5]:
+                            month = i + 1
+                return render_template('calendar.html', month= month)
+            else:
+                month = datetime.now().month - 1
+                year = datetime.now().year
+                cur.execute("SELECT FROM Tasks WHERE (MONTH(DueDate) = {month}, YEAR(DueDate) = {year}) (%s,%s) ",
+                    (month, year))
+
+                print("testing")
+                # Fetch all the rows in a list of lists.
+                tasks = cur.fetchall()
+                for task in tasks:
+                    print("testing")
+                    print(task)
+                return render_template('calendar.html', month = month)
+
+        except:
+            flash("no tasks fetched")
+            con.close()  # just to be safe, must explicitly close connection before rendering any other templates
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

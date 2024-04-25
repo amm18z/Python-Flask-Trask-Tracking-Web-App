@@ -7,23 +7,50 @@ function renderCalendar() {
   const monthDays = document.getElementById("dates");
   const month = document.getElementById("month");
   const daysElement = document.getElementById("days");
+  const prev = document.getElementById("prev");
 
-  const lastDay = new Date(fullYear, date.getMonth() + 1, 0).getDate();
-  const prevLastDay = new Date(fullYear, date.getMonth(), 0).getDate();
-  const firstDayIndex = date.getDay();
+  let months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
-  const lastDayIndex = new Date(fullYear, date.getMonth() + 1, 0).getDay();
+  let lastDay = new Date(fullYear, date.getMonth() + 1, 0).getDate();
+  let prevLastDay = new Date(fullYear, date.getMonth(), 0).getDate();
+  let firstDayIndex = new Date(fullYear, date.getMonth(), 0).getDay() + 1;
+
+  let monthStr = months[new Date().getMonth()]; // get month as a string
+  let year = date.getFullYear();
+
+  if (parseInt(month.value) == -2) {
+    month.value = 0;
+  }
+
+  if (month.value >= 0) {
+    lastDay = new Date(fullYear, parseInt(month.value) + 1, 0).getDate();
+    prevLastDay = new Date(fullYear, parseInt(month.value), 0).getDate();
+    firstDayIndex = new Date(fullYear, parseInt(month.value), 0).getDay() + 1;
+    monthStr = months[parseInt(month.value)];
+  }
+
+  lastDayIndex = new Date(fullYear, parseInt(month.value) + 1, 0).getDay();
+
+  const formattedDate = `${monthStr} ${year}`;
+  month.value = formattedDate;
 
   const nextDays = 6 - lastDayIndex;
 
-  /* i created the list of months like this reduce lines on my end*/
-  let months =
-    "January February March April May June July August September October November December";
-  months = months.split(" ");
-
   const days = ["S", "M", "T", "W", "T", "F", "S"];
 
-  month.innerText = `${months[date.getMonth()]} ${date.getFullYear()}`;
   daysElement.innerHTML = days.map((day) => `<div>${day}</div>`).join("");
 
   let dates = "";
@@ -42,15 +69,5 @@ function renderCalendar() {
 
   monthDays.innerHTML = dates;
 }
-/* events  */
-document.getElementById("prev").addEventListener("click", () => {
-  date.setMonth(date.getMonth() - 1);
-  renderCalendar();
-});
-
-document.getElementById("next").addEventListener("click", () => {
-  date.setMonth(date.getMonth() + 1);
-  renderCalendar();
-});
 
 renderCalendar();
