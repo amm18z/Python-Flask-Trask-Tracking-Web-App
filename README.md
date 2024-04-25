@@ -6,8 +6,8 @@ A simple task tracker web application that allows users to perform CRUD operatio
 * flask: used to create a flask application for our application
 * mysql.connector: used to connect the python program to the mysql database
 * contextlib: used because mysql.connector does not natively support context manager switching and the closing function of this library helps close the connection without issues
-* hashlib:
-* os:
+* hashlib: used hashlib's sha256() hash function to produce password digest
+* os: used os's urandom() function to cryptographically securely produce 16 bytes of random numbers for the salt
 ## Resources Used
 * https://dev.mysql.com/doc/
 * https://docs.python.org/3/library/contextlib.html
