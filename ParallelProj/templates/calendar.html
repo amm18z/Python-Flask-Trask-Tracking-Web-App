@@ -1,3 +1,4 @@
+<!--4/18/2024 The program in this file is the individual work of Preston Byk Hanako21-->
 <head>
     <link
         rel="stylesheet"
@@ -8,15 +9,37 @@
 </head>
 <body>
     <div id="calendar">
-        <div id="month-selector">
-            <span id="prev" class="changer"><</span>
-            <h1 id="month"></h1>
-            <span id="next" class="changer">></span>
-        </div>
+        <form
+            action="{{ url_for('calendar') }}"
+            id="month-selector"
+            method="POST"
+        >
+            <input
+                type="submit"
+                id="prev"
+                name="prev"
+                class="changer"
+                value="<"
+            />
+            <input id="month" name="currentMonth" value="{{month}}"> </input>
+            <input
+                type="submit"
+                id="next"
+                name="next"
+                class="changer"
+                value=">"
+            />
+        </form>
         <div id="days"></div>
         <div id="dates"></div>
     </div>
 
-    <div id="taskBox"></div>
+    <table>
+        {% for task in tasks %}
+            <tr>
+                <td>{{ task }}</td>
+            </tr>
+        {% endfor %}
+    </table>
 </body>
 <script src="{{url_for('static', filename='calendar.js')}}"></script>

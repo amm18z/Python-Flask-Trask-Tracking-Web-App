@@ -1,8 +1,22 @@
+/* 4/18/2024 The program in this file is the individual work of Preston Byk Hanako21*/
 body {
     background-color: #2e2e2f;
     color: #ececec;
     width: vw;
     height: vh;
+}
+a:link,
+a:visited,
+a:hover,
+a:active {
+    text-decoration: none;
+    color: #ffffff;
+}
+#month {
+    background-color: transparent;
+    pointer-events: none;
+    text-align: center;
+    color: #ffffff;
 }
 #calendar {
     height: 60vh;
@@ -24,7 +38,9 @@ body {
 }
 .changer {
     cursor: pointer;
+    color: #fffff;
 }
+
 /* makes all the dates into a grid and customizes the collection of divs the script adds*/
 #dates {
     display: grid;
@@ -42,6 +58,11 @@ body {
 /*stylizes the current day*/
 #dates div.today {
     background-color: #d91817;
+    color: #ececec;
+}
+/*stylizes the days with tasks*/
+#dates div.taskDays {
+    background-color: #437db9;
     color: #ececec;
 }
 #taskBox {

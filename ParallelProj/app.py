@@ -1,5 +1,5 @@
 # 4/18/2024 The program in this file is the individual work of Rafael Cardoso RDC21C, Aidan McGill amm18z,
-# Judas Smith jms21bi, and Stefano Sanidas sas19t
+# Judas Smith jms21bi, Stefano Sanidas sas19t, Preston Byk Hanako21
 from datetime import datetime
 
 from flask import Flask, render_template, request, flash, session
@@ -60,7 +60,7 @@ def loginForm():
             else:
                 if (tempPHash == hashlib.sha256(tempSalt.encode('utf-8') + pword.encode('utf-8')).hexdigest()):
                     currentUser = uname
-                    
+
                     # after this, database connection should be using current user, not admin user
                     return render_template('index.html', curUser=currentUser)
                 else:
@@ -476,9 +476,56 @@ def allTables():
         return render_template('allTables.html', assignments=assi, categories=cats, tasks=tsks, users=usrs)
 
 
-@app.route('/calendar')
+@app.route('/calendar', methods=['POST', 'GET'])
 def calendar():
-    return render_template('calendar.html')
+
+    with closing(msc.connect(host="cop4521-2.c5w0oqowm22h.us-east-1.rds.amazonaws.com", port="3306", user="admin",
+                             password="masterpassword", database='TaskTracker')) as con:
+        cur = con.cursor()
+
+        try:
+            month = -1
+            if request.method == "POST":
+                month_dict = [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ]
+                if request.form.get("prev") == "<":   #previous month
+                    for i in range(0, 11):
+                        if month_dict[i] == str(request.form.get("currentMonth"))[:-5]:
+                            month = i - 1
+                elif request.form.get("next") == ">":   #next month
+                    for i in range(0, 11):
+                        if month_dict[i] == str(request.form.get("currentMonth"))[:-5]:
+                            month = i + 1
+                month = month
+                year = datetime.now().year
+                cur.execute("SELECT Name, Description, DueDate FROM Tasks WHERE MONTH(DueDate) = %s AND YEAR(DueDate) = %s",
+                                    ( month, year))
+                # Fetch all the rows in a list of lists.
+                tasks = cur.fetchall()
+                return render_template('calendar.html', month= month, tasks = tasks)
+            else:
+                month = datetime.now().month
+                year = datetime.now().year
+                cur.execute("SELECT Name, Description, DueDate FROM Tasks WHERE MONTH(DueDate) = %s AND YEAR(DueDate) = %s",
+                                    ( month, year))
+                # Fetch all the rows in a list of lists.
+                tasks = cur.fetchall()
+                return render_template('calendar.html', month = month, tasks = tasks)
+
+        except msc.Error as err:
+            print("Error Code:", err.errno)
+            print("SQLSTATE:", err.sqlstate)
+            print("Message:", err.msg)
+            con.close()  # just to be safe, must explicitly close connection before rendering any other templates
+            return render_template('index.html', curUser=currentUser)
+
+
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
